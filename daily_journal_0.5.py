@@ -159,7 +159,7 @@ class Day():
         else:
             return False
             
-
+    
 
     
 #month class, will open a journal_data object in main class
