@@ -27,6 +27,8 @@
    - helpful when making the goal checkboxes? and drop downs
  - retrieve data and assign it to day objects
  - pulling data from the day object and storing it
+ - edit entries using the day object data
+ - pull data using key words
 ## Day class
  __Variables__
  - date
@@ -34,12 +36,16 @@
  - goals and states - dictionary {goal:[goal_id, state]}
 
  __Functions/Operations__
- - assigning 
+ - assigning attributes in their own functions to allow more options to be encapsulated in the function
 
 
 ## Month class
  __Variables__
  -month number
  -month name
- -day list (holds all the day ojects needed for that month)
+ -day matrix (holds all the day ojects needed for that month)
+
+ __Functions/Operations__
+ - building the day matrix to hold all the day objects that are needed for that month
+ - revealing the buttons that correspond with the day matrix's days
  
