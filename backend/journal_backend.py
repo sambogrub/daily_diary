@@ -1,9 +1,7 @@
 import sqlite3
-import tkinter as tk
-from tkinter import ttk
 import calendar as cal
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+
 
 
 #journal class
@@ -59,8 +57,7 @@ class JournalData():
         try:
             cursor.execute(query)
             goals = cursor.fetchall()
-            for goal in goals:
-                goals_dict[goal[0]] = goal[1]
+            goals_dict = {goal[0]: goal[1] for goal in goals}
             return goals_dict
         except Exception as e:
             print(f'Error getting list of goals: {e}')
