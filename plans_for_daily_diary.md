@@ -11,20 +11,20 @@
 
  __Schema__
 
- -entries table
-    -id - INTEGER PRIMARY KEY AUTOINCREMENT
-    -date - DATE UNIQUE 
-    -entry - TEXT
+ - entries table
+    - id - INTEGER PRIMARY KEY AUTOINCREMENT
+    - date - DATE UNIQUE 
+    - entry - TEXT
 
- -goals_state table
-    -id - INTEGER PRIMARY KEY AUTOINCREMENT
-    -entry_date - DATE (matches entry(date))
-    -goal_id - INTEGER (matches goals(id))
-    -state - BOOLEAN defaults to 0
+ - goals_state table
+    - id - INTEGER PRIMARY KEY AUTOINCREMENT
+    - entry_date - DATE (matches entry(date))
+    - goal_id - INTEGER (matches goals(id))
+    - state - BOOLEAN defaults to 0
 
- -goals table
-    -id - INTEGER PRIMARY KEY AUTOINCREMENT
-    -goal - TEXT
+ - goals table
+    - id - INTEGER PRIMARY KEY AUTOINCREMENT
+    - goal - TEXT
 
  __Functions/Operations__
  - create tables
@@ -47,9 +47,9 @@
 
 ## Month class
  __Variables__
- -month number
- -month name
- -day matrix (holds all the day ojects needed for that month)
+ - month number
+ - month name
+ - day matrix (holds all the day ojects needed for that month)
 
  __Functions/Operations__
  - building the day matrix to hold all the day objects that are needed for that month
