@@ -6,6 +6,11 @@
  - Build a 'Day' class to handle all the stuff from that day. That way I can pass around all the data in one object rather than calling things randomly. __DAY OBJECT EVERYWHERE, EVEN BETWEEN CLASSES__
  - Build a 'Month' class that will be the container for the day objects of that month. It will have the functions to create the day objects, get specific days, possibly even reveal the calendar itself
  - use a date object throughout the code to keep consistency 
+ - Simplistic design, swap between journal and 'progress' (keep track of meeing goals, shown in a calendar format)
+   - only show journal at start
+
+# journal_backend
+
 ## Journal class
  holds the operators for all sqlite operations
 
@@ -55,3 +60,8 @@
  - building the day matrix to hold all the day objects that are needed for that month
  - revealing the buttons that correspond with the day matrix's days
  
+
+
+# journal_gui
+
+ - top frame with selection buttons
