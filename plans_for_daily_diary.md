@@ -8,19 +8,24 @@
  - use a date object throughout the code to keep consistency 
 ## Journal class
  holds the operators for all sqlite operations
+
  __Schema__
+
  -entries table
     -id - INTEGER PRIMARY KEY AUTOINCREMENT
     -date - DATE UNIQUE 
     -entry - TEXT
+
  -goals_state table
     -id - INTEGER PRIMARY KEY AUTOINCREMENT
     -entry_date - DATE (matches entry(date))
     -goal_id - INTEGER (matches goals(id))
     -state - BOOLEAN defaults to 0
+
  -goals table
     -id - INTEGER PRIMARY KEY AUTOINCREMENT
     -goal - TEXT
+
  __Functions/Operations__
  - create tables
  - provide list of goals
@@ -29,6 +34,7 @@
  - pulling data from the day object and storing it
  - edit entries using the day object data
  - pull data using key words
+  
 ## Day class
  __Variables__
  - date
