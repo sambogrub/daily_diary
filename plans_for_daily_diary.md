@@ -29,7 +29,7 @@
 
  - goals table
     - id - INTEGER PRIMARY KEY AUTOINCREMENT
-    - goal - TEXT
+    - goal_description - TEXT
 
  __Functions/Operations__
  - create tables
@@ -58,6 +58,7 @@
 
  __Functions/Operations__
  - building the day matrix to hold all the day objects that are needed for that month
+   - days in the day
  - revealing the buttons that correspond with the day matrix's days
  
 
@@ -65,3 +66,9 @@
 # journal_gui
 
  - top frame with selection buttons
+ - 'date'label will change when viewing the journal or calendar (from date format to just the month)
+ - journal and calendar frames will be built at the beginning and will be raised/lowered via the selection buttons
+ - self.daily_goal_button_dict holds all the daily goal button objects, the keys are the goal ids
+   - 
+   - this will also be used to activate or deactivate the buttons when a new day is selected
+  

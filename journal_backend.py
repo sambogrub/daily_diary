@@ -76,7 +76,7 @@ class JournalData():
             except Exception as e:
                 print(f'error storing goal: {e}')
       
-        self.conn.close()
+        cursor.close()
 
     #assign data to day
     def assign_day_data(self, day):
@@ -180,7 +180,8 @@ class Month():
         self.year = year
         self.journal_data = journal_data
         self.month_name = self.set_month_name()
-        self.day_matrix = self.populate_day_matrix()
+        self.day_matrix, self.calendar_matrix = self.populate_day_matrix()
+        
     
 
     def set_month_name(self):
@@ -213,7 +214,7 @@ class Month():
                     week_list.append(day)
                     
             day_matrix.append(week_list)
-        return day_matrix
+        return day_matrix, calendar_matrix
     
     #return a specific day object that corresponds with the given date
     def get_day(self, date):
