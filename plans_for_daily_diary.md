@@ -9,6 +9,17 @@
  - Simplistic design, swap between journal and 'progress' (keep track of meeing goals, shown in a calendar format)
    - only show journal at start
 
+## TO DO
+ - edit goals function in journal_backend
+ - edit goals options in journal_gui
+ - edit journal function in journal_backend
+ - save day functions in journal_gui 
+   - save new journal and daily goal data
+   - edit existing journal and daily goal data
+ - change month functions
+ - select days in calendar functions
+ - select goals to view in calendar functions
+
 # journal_backend
 
 ## Journal class
