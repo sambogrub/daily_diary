@@ -10,8 +10,8 @@
    - only show journal at start
 
 ## TO DO
- - edit goals function in journal_backend
- - edit goals options in journal_gui
+ - DONE edit goals function in journal_backend
+ - DONE edit goals options in journal_gui
  - edit journal function in journal_backend
  - save day functions in journal_gui 
    - save new journal and daily goal data
