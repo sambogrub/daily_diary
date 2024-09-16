@@ -91,22 +91,32 @@ class JournalApp():
     def build_journal_frame(self):
         self.journal_frame = ttk.Frame(self.window)
         self.journal_entry_frame = ttk.Frame(self.journal_frame)
-
-        #frame to hold the daily goals frame
-        self.daily_options_frame = ttk.Frame(self.journal_frame)
-
+        
         self.journal_entry = tk.Text(self.journal_entry_frame)
-
-        self.daily_goal_button_dict = self.populate_goal_buttons(self.daily_options_frame,(4,4),(0,0))
-
-        self.edit_goals_button = ttk.Button(self.daily_options_frame, text = 'Edit Goals', command = self.build_edit_goals_main_frame)
-        self.save_day_button = ttk.Button(self.daily_options_frame, text = 'Save Day')
+       
+        self.build_daily_options_frame()        
 
         self.journal_entry.place(x = 3, y =3, relwidth=.99, relheight=.99)
         self.journal_entry_frame.place(x = 0, y = 0, relwidth=1, height = self.journal_entry_frame_size[1])
 
-        self.daily_options_frame.place(x = 0, y = self.journal_entry_frame_size[1], relwidth=1, height = self.daily_options_frame_size[1])
+        
         self.journal_frame.place(x = 0, y = self.selection_frame_size[1], relwidth=1, height = self.journal_frame_size[1])
+
+        
+
+    #building out the bottom frame with the gaols to select and the save day and edit goals button
+    def build_daily_options_frame(self):
+
+        self.daily_options_frame = ttk.Frame(self.journal_frame)
+
+        #populating the daily goal button dictionary to keep track and assign configure each goal button
+        self.daily_goal_button_dict = self.populate_goal_buttons(self.daily_options_frame,(4,4),(0,0))
+
+        #these buttons will be placed and removed with the selection buttons
+        self.edit_goals_button = ttk.Button(self.daily_options_frame, text = 'Edit Goals', command = self.build_edit_goals_main_frame)
+        self.save_day_button = ttk.Button(self.daily_options_frame, text = 'Save Day')
+
+        self.daily_options_frame.place(x = 0, y = self.journal_entry_frame_size[1], relwidth=1, height = self.daily_options_frame_size[1])
 
         for i in range(4):
             self.daily_options_frame.grid_columnconfigure(i, weight = 1, uniform = 'daily_options_columns')
@@ -145,7 +155,7 @@ class JournalApp():
            
 
         self.add_goal_button = ttk.Button(self.edit_goals_frame, text = 'Add Goal', command = self.build_add_goal_frame)
-        self.close_button = ttk.Button(self.edit_goals_frame, text = 'Done', command = self.edit_goals_frame.destroy)
+        self.close_button = ttk.Button(self.edit_goals_frame, text = 'Done', command = self.rebuild_daily_options_frame)
 
         self.edit_goals_label.grid(column = 0, row = 0, columnspan=2, sticky='nsew')
         self.add_goal_button.grid(column = 0, row = 6)
@@ -158,6 +168,14 @@ class JournalApp():
 
         for i in range(7):
             self.edit_goals_frame.grid_rowconfigure(i, weight = 1, uniform = 'edit_goals_rows')
+
+    #rebuild the daily options frame
+    def rebuild_daily_options_frame(self):
+        self.edit_goals_frame.destroy()
+        self.build_daily_options_frame()
+        self.edit_goals_button.grid(column = 0, row = 3)
+        self.save_day_button.grid(column = 3, row = 3)
+
 
     #small frame and children to add an actual goal
     def build_add_goal_frame(self):
@@ -186,8 +204,8 @@ class JournalApp():
         self.edit_indv_goal_frame = ttk.Frame(self.edit_goals_frame)
         edit_label = ttk.Label(self.edit_indv_goal_frame, text = 'Change or Delete Goal')
         self.edit_indv_goal_entry = ttk.Entry(self.edit_indv_goal_frame)
-        delete_button = ttk.Button(self.edit_indv_goal_frame, text = 'Delete Goal')
-        update_button = ttk.Button(self.edit_indv_goal_frame, text = 'Update Goal')
+        delete_button = ttk.Button(self.edit_indv_goal_frame, text = 'Delete Goal', command = lambda: self.delete_indv_goal(id))
+        update_button = ttk.Button(self.edit_indv_goal_frame, text = 'Update Goal', command = lambda: self.edit_indv_goal(id))
         cancel_button = ttk.Button(self.edit_indv_goal_frame, text = 'Cancel', command = self.edit_indv_goal_frame.destroy)
 
         self.edit_indv_goal_entry.insert(0, goal)
@@ -198,6 +216,20 @@ class JournalApp():
         delete_button.place(anchor = 'ne',relx = .45, rely = .5, relheight=.25, relwidth=.4)
         update_button.place(anchor = 'nw', relx = .55, rely = .5, relheight=.25, relwidth=.4)
         cancel_button.place(relx = .3, rely = .75, relheight=.25, relwidth=.4)
+
+    #edit individual goal function, sends goal id and new description to journal backend
+    def edit_indv_goal(self,id):
+        edited_goal = self.edit_indv_goal_entry.get()
+        self.journal_data.edit_goal(id,edited_goal)
+        self.edit_goals_frame.destroy()
+        self.build_edit_goals_main_frame()
+
+    #delete individual goal function, sends goal id to journal backend
+    def delete_indv_goal(self, id):
+        self.journal_data.delete_goal(id)
+        self.edit_goals_frame.destroy()
+        self.build_edit_goals_main_frame()
+
 
 
     

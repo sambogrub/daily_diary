@@ -78,6 +78,35 @@ class JournalData():
       
         cursor.close()
 
+    #edit goals given the goal id
+    def edit_goal(self, goal_id, edited_goal):
+        edit_query = '''UPDATE goals
+                        SET goal_description = ?
+                        WHERE id = ?'''
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(edit_query,(edited_goal,goal_id))
+            self.conn.commit()
+        except Exception as e:
+            print(f'Error updating goal: {e}')
+        finally:
+            cursor.close()
+
+    #delete goal from list
+    def delete_goal(self, goal_id):
+        delete_query = '''DELETE FROM goals
+                        WHERE id = ?'''
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(delete_query,(goal_id,))
+            self.conn.commit()
+        except Exception as e:
+            print(f'Error deleteing goal: {e}')
+        finally:
+            cursor.close()
+        
+            
+
     #assign data to day
     def assign_day_data(self, day):
         date = day.date
