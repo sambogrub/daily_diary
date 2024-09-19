@@ -49,10 +49,12 @@ class JournalApp():
         style.configure('TFrame', borderwidth = 2, relief = 'sunken')
 
     def get_backend_objs(self):
-        self.journal_data = JournalData()
+        # self.journal_data = JournalData()
+        with JournalData() as journal_data:
+            journal_data.create_tables()
 
-       
-        self.month = Month(self.current_date.month,self.current_date.year,self.journal_data)
+        with JournalData() as journal_data:
+            self.month = Month(self.current_date.month,self.current_date.year,journal_data)
 
     #shaping and labeling the main window
     def window_attributes(self):
@@ -127,7 +129,8 @@ class JournalApp():
     #create all the goal buttons as well as the goal button dictionary 
     #'frame' is where the buttons will be placed, 'size' is a touple of (colums, rows), 'where' is a touple of where to start (column, row)
     def populate_goal_buttons(self, frame, size, where):
-        goals_dict = self.journal_data.get_goals_dict()
+        with JournalData() as journal_data:
+            goals_dict = journal_data.get_goals_dict()
         #holds the button objects to be called on later
         goal_button_dict = {}
         num_columns, num_rows = size
@@ -192,7 +195,8 @@ class JournalApp():
     #adds goal to the journal data
     def add_goal(self):
         goal = [self.goal_entry.get()]
-        self.journal_data.add_goals(goal)
+        with JournalData() as journal_data:
+            journal_data.add_goals(goal)
         
         self.edit_goals_frame.destroy()
         self.build_edit_goals_main_frame()
@@ -220,13 +224,15 @@ class JournalApp():
     #edit individual goal function, sends goal id and new description to journal backend
     def edit_indv_goal(self,id):
         edited_goal = self.edit_indv_goal_entry.get()
-        self.journal_data.edit_goal(id,edited_goal)
+        with JournalData() as journal_data:
+            journal_data.edit_goal(id,edited_goal)
         self.edit_goals_frame.destroy()
         self.build_edit_goals_main_frame()
 
     #delete individual goal function, sends goal id to journal backend
     def delete_indv_goal(self, id):
-        self.journal_data.delete_goal(id)
+        with JournalData() as journal_data:
+            journal_data.delete_goal(id)
         self.edit_goals_frame.destroy()
         self.build_edit_goals_main_frame()
 
@@ -298,7 +304,9 @@ class JournalApp():
         self.save_day_button.grid_forget()
 
     
-
+    #save days data to database
+    def save_day_data(self):
+        pass
 
                     
 

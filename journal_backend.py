@@ -8,12 +8,35 @@ from datetime import datetime
 class JournalData():
     def __init__(self, db_name = 'daily_journal.db'):
         self.db_name = db_name
+        self.conn = None
+        self.cursor = None
+        
+
+    #context management for cursor
+    def __enter__(self):
         self.conn = sqlite3.connect(self.db_name)
-        self.create_tables()
+        self.cursor = self.conn.cursor()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        #handle exceptions and clean up resources
+        if exc_type is not None:
+            #if there is an exception, roll back the transaction
+            self.conn.rollback()
+        else:
+            self.conn.commit()
+
+        #clean up cursor connection
+        if self.cursor:
+            self.cursor.close()
+        if self.conn:
+            self.conn.close()
+
     #make sure the connection is closed
     def __del__(self):
         if self.conn:
             self.conn.close()
+
     #create tables if needed
     def create_tables(self):
         
@@ -36,77 +59,75 @@ class JournalData():
             FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
             )''']
         
-        cursor = self.conn.cursor()
+
+        
         try:
-         
+                
             for query in queries:
-                cursor.execute(query)
+                self.cursor.execute(query)
             self.conn.commit()
-            
+                    
         except Exception as e:
             print(f'Error occured in JournalData().create_tables(): {e}')
-        finally:
-            cursor.close()
-        
+               
+    
+
 
     #get list of all goals
     def get_goals_dict(self):
         query = '''SELECT id, goal_description FROM goals'''
-        cursor = self.conn.cursor()
+        
         goals_dict = {}
+        
         try:
-            cursor.execute(query)
-            goals = cursor.fetchall()
+            self.cursor.execute(query)
+            goals = self.cursor.fetchall()
             goals_dict = {goal[0]: goal[1] for goal in goals}
             return goals_dict
         except Exception as e:
             print(f'Error getting list of goals: {e}')
-        finally:
-            cursor.close()
+            return None
+       
 
     #add new goals
     def add_goals(self, goals):
         goal_query = '''INSERT INTO goals (goal_description)
                         VALUES (?)'''
-        cursor = self.conn.cursor()
+        
         for goal in goals:
             try:
-                cursor.execute(goal_query,(goal,))
-                self.conn.commit()
+                self.cursor.execute(goal_query,(goal,))
+                        
             except Exception as e:
                 print(f'error storing goal: {e}')
-      
-        cursor.close()
+            
+       
 
-    #edit goals given the goal id
+    #edit goals table given the goal id
     def edit_goal(self, goal_id, edited_goal):
         edit_query = '''UPDATE goals
                         SET goal_description = ?
                         WHERE id = ?'''
-        cursor = self.conn.cursor()
+        
         try:
-            cursor.execute(edit_query,(edited_goal,goal_id))
-            self.conn.commit()
+            self.cursor.execute(edit_query,(edited_goal,goal_id))
+                    
         except Exception as e:
             print(f'Error updating goal: {e}')
-        finally:
-            cursor.close()
+     
 
     #delete goal from list
     def delete_goal(self, goal_id):
         delete_query = '''DELETE FROM goals
                         WHERE id = ?'''
-        cursor = self.conn.cursor()
+        
         try:
-            cursor.execute(delete_query,(goal_id,))
-            self.conn.commit()
+            self.cursor.execute(delete_query,(goal_id,))
+                   
         except Exception as e:
             print(f'Error deleteing goal: {e}')
-        finally:
-            cursor.close()
+      
         
-            
-
     #assign data to day
     def assign_day_data(self, day):
         date = day.date
@@ -115,24 +136,80 @@ class JournalData():
         goal_query = '''SELECT goals.id, goals.goal_description, goals_state.completed
                         FROM goals
                         LEFT JOIN goals_state ON goals.id = goals_state.goal_id AND goals_state.entry_date = ?'''
-        cursor = self.conn.cursor()
+        
         try:
-            cursor.execute(entry_query,(date,))
-            entry = cursor.fetchone()
+            self.cursor.execute(entry_query,(date,))
+            entry = self.cursor.fetchone()
             day.set_entry(entry)
         except Exception as e:
             print(f'Error assigning entry to day {date}: {e}')
         if entry is not None:
             try:
-                cursor.execute(goal_query,(date,))
-                goals = cursor.fetchall()
+                self.cursor.execute(goal_query,(date,))
+                goals = self.cursor.fetchall()
                 day.add_goals(goals)
             except Exception as e:
                 print(f'Error adding goals on day {date}: {e}')
-            finally:
-                cursor.close()
+           
+
+    #check if data is already present in table, then act on that
+    def check_if_date(self, day):
+       
+        try:
+            self.cursor.execute('''SELECT 1 FROM entries WHERE date = ?''', (day.date,))
+            result = self.cursor.fetchone()
+        except Exception as e:
+            result = None
+            print(f'Error checking day data: {e}')
+        if result:
+                    
+            self.edit_days_data(day)
         else:
-            cursor.close()
+                    
+            self.add_day_data(day)
+
+        
+
+    #edits entries and goals_state table
+    def edit_days_data(self, day):
+        
+        goals = day.goals #returns a dictionary {goal_id:(goal_description,goal_state)}
+        edit_entry_query = '''UPDATE entries
+                            SET entry = ?
+                            WHERE date = ?'''
+        check_goal_state_query = '''SELECT 1 FROM goals_state WHERE (entry_date, goal_id) = (?,?)'''
+        edit_goal_state_query = '''UPDATE goals_state
+                                SET state = ?
+                                WHERE (entry_date, goal_id) = (?,?)
+                                '''
+        add_goal_query = '''INSERT INTO goals_state (entry_date, goal_id, state)
+                        VALUES (?,?,?)'''
+        
+        try:
+            self.cursor.execute(edit_entry_query,(day.entry,day.date))
+                    
+        except Exception as e:
+            print(f'Error storing entry: {e}')
+
+        for goal_id, (description,state) in goals.items():
+            try:
+                self.cursor.execute(check_goal_state_query, (day.date, goal_id))
+                result = self.cursor.fetchone()
+            except Exception as e:
+                print(f'Error checking goal {description} presence: {e}')
+            if result:
+                try:
+                    self.cursor.execute(edit_goal_state_query, (state,day.date,goal_id))
+                            
+                except Exception as e:
+                    print(f'Error updating goal {description} state: {e}')
+            else:
+                try:
+                    self.cursor.execute(add_goal_query, (day.date,goal_id,state))
+                    
+                except Exception as e:
+                    print(f'Error adding goal {description} state: {e}')
+       
 
     #get data from day and load to tables
     def add_day_data(self, day):
@@ -143,30 +220,25 @@ class JournalData():
                         '''
         goals_query = '''INSERT INTO goals_state (entry_date, goal_id, state)
                         VALUES (?,?,?)'''
-        cursor =  self.conn.cursor()
-
+        
         #try to insert the day entry
         try:
-            cursor.execute(entry_query,(day.date,day.entry))
-            self.conn.commit()
+            self.cursor.execute(entry_query,(day.date,day.entry))
+                    
             stored= True
         except Exception as e:
             print(f'Error storing entry: {e}')
-        
+                
         #if the day entry insert worked then try to insert the goals states
         if stored:
-            try:
-                for goal_id, (description, state) in goals.items():
-                    cursor.execute(goals_query,(day.date,goal_id,state))
-                self.conn.commit()
-            except Exception as e:
-                print(f'Error storing goals: {e}')
-            finally:
-                cursor.close()
-        else:
-            cursor.close()
-        
-  
+            for goal_id, (description, state) in goals.items():
+                try:
+                        
+                    self.cursor.execute(goals_query,(day.date,goal_id,state))
+                            
+                except Exception as e:
+                    print(f'Error storing goal {description}: {e}')
+                
 
 #day class
 class Day():
@@ -222,7 +294,7 @@ class Month():
         calendar_matrix = cal.monthcalendar(self.year,self.month_num)
         
         #ensure the day matrix that is built from calendar comparison has the same shape as the button matrix
-        while len(calendar_matrix) < 6:
+        while len(calendar_matrix) < 6: # this is the max number of 'weeks' in a month
             calendar_matrix.append([0,0,0,0,0,0,0])
         
         for i, week in enumerate(calendar_matrix):

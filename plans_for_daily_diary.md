@@ -7,7 +7,8 @@
  - Build a 'Month' class that will be the container for the day objects of that month. It will have the functions to create the day objects, get specific days, possibly even reveal the calendar itself
  - use a date object throughout the code to keep consistency 
  - Simplistic design, swap between journal and 'progress' (keep track of meeing goals, shown in a calendar format)
-   - only show journal at start
+   - show journal, not calendar, at start of app
+ - should I move some of the GUI aspects to their own classes? like some of the frames or the journal and calendar sections?
 
 ## TO DO
  - DONE edit goals function in journal_backend
