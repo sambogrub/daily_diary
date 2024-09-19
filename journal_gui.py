@@ -24,6 +24,7 @@ class JournalApp():
         self.build_journal_frame()
         self.build_calendar_selection_frame()
         self.select_journal()
+        
 
 
     def initial_date_vars(self):
@@ -32,7 +33,9 @@ class JournalApp():
         self.current_date =today.date()
         
         #tkinter variables
-        self.selection_label_var = tk.StringVar()       
+        self.selection_label_var = tk.StringVar()  
+
+            
 
     #size touples (x,y)
     def size_vars(self):
@@ -52,9 +55,11 @@ class JournalApp():
         # self.journal_data = JournalData()
         with JournalData() as journal_data:
             journal_data.create_tables()
-
-        with JournalData() as journal_data:
             self.month = Month(self.current_date.month,self.current_date.year,journal_data)
+
+        #set the initial day variable
+        self.entry_text = ' '
+        self.select_day() 
 
     #shaping and labeling the main window
     def window_attributes(self):
@@ -104,6 +109,8 @@ class JournalApp():
         
         self.journal_frame.place(x = 0, y = self.selection_frame_size[1], relwidth=1, height = self.journal_frame_size[1])
 
+        self.set_entry_text()
+
         
 
     #building out the bottom frame with the gaols to select and the save day and edit goals button
@@ -116,7 +123,7 @@ class JournalApp():
 
         #these buttons will be placed and removed with the selection buttons
         self.edit_goals_button = ttk.Button(self.daily_options_frame, text = 'Edit Goals', command = self.build_edit_goals_main_frame)
-        self.save_day_button = ttk.Button(self.daily_options_frame, text = 'Save Day')
+        self.save_day_button = ttk.Button(self.daily_options_frame, text = 'Save Day', command=self.save_day_data)
 
         self.daily_options_frame.place(x = 0, y = self.journal_entry_frame_size[1], relwidth=1, height = self.daily_options_frame_size[1])
 
@@ -287,6 +294,7 @@ class JournalApp():
                 elif day:
                     button[0].grid(column = column, row = row, sticky = 'nsew')
                     button[0].configure(text = day.date.day)
+                    button[0].configure(command = lambda date = day.date: self.set_current_date(date))
 
     #select journal section, from journal button in selection frame
     def select_journal(self):
@@ -303,10 +311,38 @@ class JournalApp():
         self.edit_goals_button.grid_forget()
         self.save_day_button.grid_forget()
 
-    
+    def set_current_date(self,date):
+        self.current_date = date
+        self.select_day()
+        self.set_entry_text()
+        self.select_journal()
+        
+
+    #selects and sets the current day object using the current day variable
+    def select_day(self):
+        self.day = self.month.get_day(self.current_date)
+        self.entry_text = self.day.entry
+        
+        
+
+    def set_entry_text(self):
+        if type(self.entry_text) == tuple:
+            self.entry_text = self.entry_text[0]
+        print(self.entry_text)
+        if self.journal_entry.get('1.0'):
+            self.journal_entry.delete('1.0',tk.END)
+        if self.entry_text:
+            self.journal_entry.insert(tk.END, self.entry_text)
+        
+
     #save days data to database
     def save_day_data(self):
-        pass
+        self.day.entry = self.journal_entry.get('1.0',tk.END)
+        with JournalData() as journal_data:
+            journal_data.check_if_date(self.day)
+
+    
+
 
                     
 
