@@ -50,6 +50,8 @@ class JournalApp():
         style = ttk.Style()
         style.theme_use('alt')
         style.configure('TFrame', borderwidth = 2, relief = 'sunken')
+        style.configure('ActiveGoal.TButton', background = 'green')
+        style.configure('InactiveGoal.TButton', background = 'grey')
 
     def get_backend_objs(self):
         # self.journal_data = JournalData()
@@ -120,6 +122,7 @@ class JournalApp():
 
         #populating the daily goal button dictionary to keep track and assign configure each goal button
         self.daily_goal_button_dict = self.populate_goal_buttons(self.daily_options_frame,(4,4),(0,0))
+        self.make_goal_buttons_toggle()
 
         #these buttons will be placed and removed with the selection buttons
         self.edit_goals_button = ttk.Button(self.daily_options_frame, text = 'Edit Goals', command = self.build_edit_goals_main_frame)
@@ -152,7 +155,27 @@ class JournalApp():
         
         return goal_button_dict
     
-    
+    #give each goal id a 'state' of it's button, then config the button command to call the toggle function
+    def make_goal_buttons_toggle(self):
+
+        for id in self.daily_goal_button_dict:
+            button_state = tk.BooleanVar(value = False)
+            goal_button = self.daily_goal_button_dict[id]
+            goal_button.config(command = lambda b = id, s = button_state: self.toggle_goal_button(b,s))
+            self.daily_goal_button_dict[id] = [goal_button, button_state]
+
+    def toggle_goal_button(self, button_id, state):
+        button_state = state.get()
+        button =self.daily_goal_button_dict[button_id][0]
+        if button_state == False:
+            state.set(True)
+            button.config(style = 'ActiveGoal.TButton')
+        else:
+            state.set(False)
+            button.config(style = 'InactiveGoal.TButton')
+        print(state.get())
+
+
     #build frame and children to select goals to edit or add goals
     def build_edit_goals_main_frame(self):
         self.edit_goals_frame = ttk.Frame(self.window)
@@ -186,7 +209,6 @@ class JournalApp():
         self.edit_goals_button.grid(column = 0, row = 3)
         self.save_day_button.grid(column = 3, row = 3)
 
-
     #small frame and children to add an actual goal
     def build_add_goal_frame(self):
         self.add_goal_frame = ttk.Frame(self.edit_goals_frame)
@@ -207,7 +229,6 @@ class JournalApp():
         
         self.edit_goals_frame.destroy()
         self.build_edit_goals_main_frame()
-
 
     #build the edit an individual goal frame
     def build_edit_indv_goal_frame(self, id):
@@ -328,7 +349,6 @@ class JournalApp():
     def set_entry_text(self):
         if type(self.entry_text) == tuple:
             self.entry_text = self.entry_text[0]
-        print(self.entry_text)
         if self.journal_entry.get('1.0'):
             self.journal_entry.delete('1.0',tk.END)
         if self.entry_text:
@@ -338,6 +358,11 @@ class JournalApp():
     #save days data to database
     def save_day_data(self):
         self.day.entry = self.journal_entry.get('1.0',tk.END)
+
+        for id in self.daily_goal_button_dict:
+            print(self.daily_goal_button_dict[id])
+
+
         with JournalData() as journal_data:
             journal_data.check_if_date(self.day)
 

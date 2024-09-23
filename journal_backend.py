@@ -182,7 +182,7 @@ class JournalData():
                                 SET state = ?
                                 WHERE (entry_date, goal_id) = (?,?)
                                 '''
-        add_goal_query = '''INSERT INTO goals_state (entry_date, goal_id, state)
+        add_goal_query = '''INSERT INTO goals_state (entry_date, goal_id, completed)
                         VALUES (?,?,?)'''
         
         try:
@@ -218,7 +218,7 @@ class JournalData():
         entry_query = '''INSERT INTO entries (date, entry)
                         VALUES (?,?)
                         '''
-        goals_query = '''INSERT INTO goals_state (entry_date, goal_id, state)
+        goals_query = '''INSERT INTO goals_state (entry_date, goal_id, completed)
                         VALUES (?,?,?)'''
         
         #try to insert the day entry
