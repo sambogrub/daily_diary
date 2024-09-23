@@ -124,6 +124,8 @@ class JournalApp():
         self.daily_goal_button_dict = self.populate_goal_buttons(self.daily_options_frame,(4,4),(0,0))
         self.make_goal_buttons_toggle()
 
+        self.set_init_goal_button_states()
+
         #these buttons will be placed and removed with the selection buttons
         self.edit_goals_button = ttk.Button(self.daily_options_frame, text = 'Edit Goals', command = self.build_edit_goals_main_frame)
         self.save_day_button = ttk.Button(self.daily_options_frame, text = 'Save Day', command=self.save_day_data)
@@ -164,6 +166,7 @@ class JournalApp():
             goal_button.config(command = lambda b = id, s = button_state: self.toggle_goal_button(b,s))
             self.daily_goal_button_dict[id] = [goal_button, button_state]
 
+    #toggle the active/inactive style of each button
     def toggle_goal_button(self, button_id, state):
         button_state = state.get()
         button =self.daily_goal_button_dict[button_id][0]
@@ -332,11 +335,13 @@ class JournalApp():
         self.edit_goals_button.grid_forget()
         self.save_day_button.grid_forget()
 
+    #changes the current date, then updates the needed data and widgets
     def set_current_date(self,date):
         self.current_date = date
         self.select_day()
         self.set_entry_text()
         self.select_journal()
+        self.set_init_goal_button_states()
         
 
     #selects and sets the current day object using the current day variable
@@ -345,7 +350,27 @@ class JournalApp():
         self.entry_text = self.day.entry
         
         
+    #set goal button states
+    def set_init_goal_button_states(self):
+        goal_dict = self.day.goals #goals as dictionary with key = id, values = [goal description, completion state]
+        if not goal_dict == {}:
+            for id in self.daily_goal_button_dict:
+                if goal_dict[id]:
+                    state = goal_dict[id][1]
+                    if state == 1:
+                        self.daily_goal_button_dict[id][1] = state 
+                        self.daily_goal_button_dict[id][0].config(style = 'ActiveGoal.TButton')
+                    elif state == 0:
+                        self.daily_goal_button_dict[id][1] = state
+                        self.daily_goal_button_dict[id][0].config(style = 'InactiveGoal.TButton')
+                else:
+                    self.daily_goal_button_dict[id][0].config(style = 'InactiveGoal.TButton')
+        else:
+            for id in self.daily_goal_button_dict:
+                self.daily_goal_button_dict[id][0].config(style = 'InactiveGoal.TButton')
 
+
+    # set the journal entry text to the already saved text, if there is any
     def set_entry_text(self):
         if type(self.entry_text) == tuple:
             self.entry_text = self.entry_text[0]
@@ -358,10 +383,18 @@ class JournalApp():
     #save days data to database
     def save_day_data(self):
         self.day.entry = self.journal_entry.get('1.0',tk.END)
-
+        
         for id in self.daily_goal_button_dict:
-            print(self.daily_goal_button_dict[id])
-
+            button, state = self.daily_goal_button_dict[id]
+            if not isinstance(state,int):
+                state = state.get()
+            if state == False:
+                state = 0
+            elif state == True:
+                state = 1
+            if self.day.goals[id]:
+                self.day.goals[id][1] = state
+       
 
         with JournalData() as journal_data:
             journal_data.check_if_date(self.day)

@@ -179,7 +179,7 @@ class JournalData():
                             WHERE date = ?'''
         check_goal_state_query = '''SELECT 1 FROM goals_state WHERE (entry_date, goal_id) = (?,?)'''
         edit_goal_state_query = '''UPDATE goals_state
-                                SET state = ?
+                                SET completed = ?
                                 WHERE (entry_date, goal_id) = (?,?)
                                 '''
         add_goal_query = '''INSERT INTO goals_state (entry_date, goal_id, completed)
@@ -262,6 +262,8 @@ class Day():
     def add_goals(self, goals_list):
         for goal in goals_list:
             id, description, state = goal
+            if state == None:
+                state = 0
             self.goals[id] = [description, state]
 
     #goals are saved by id, need to receive goal id and description
