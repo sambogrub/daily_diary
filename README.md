@@ -37,7 +37,7 @@
     - id - INTEGER PRIMARY KEY AUTOINCREMENT
     - entry_date - DATE (matches entry(date))
     - goal_id - INTEGER (matches goals(id))
-    - state - BOOLEAN defaults to 0
+    - completed - BOOLEAN defaults to 0
 
  - goals table
     - id - INTEGER PRIMARY KEY AUTOINCREMENT
