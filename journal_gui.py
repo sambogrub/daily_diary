@@ -46,7 +46,7 @@ class JournalApp():
         self.journal_entry_frame_size = (self.window_size[0], self.journal_frame_size[1]-self.daily_options_frame_size[1])
 
     #initializing the styles used
-    def ttk_styles(self):
+    def ttk_styles(self): 
         style = ttk.Style()
         style.theme_use('alt')
         style.configure('TFrame', borderwidth = 2, relief = 'sunken')
