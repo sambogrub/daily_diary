@@ -159,9 +159,8 @@ class JournalApp():
     
     #give each goal id a 'state' of it's button, then config the button command to call the toggle function
     def make_goal_buttons_toggle(self):
-
         for id in self.daily_goal_button_dict:
-            button_state = tk.BooleanVar(value = False)
+            button_state = tk.BooleanVar(value = 0)
             goal_button = self.daily_goal_button_dict[id]
             goal_button.config(command = lambda b = id, s = button_state: self.toggle_goal_button(b,s))
             self.daily_goal_button_dict[id] = [goal_button, button_state]
@@ -170,14 +169,13 @@ class JournalApp():
     def toggle_goal_button(self, button_id, state):
         button_state = state.get()
         button =self.daily_goal_button_dict[button_id][0]
-        if button_state == False:
-            state.set(True)
+        if button_state == 0:
+            self.daily_goal_button_dict[button_id][1] = 1
             button.config(style = 'ActiveGoal.TButton')
         else:
-            state.set(False)
+            self.daily_goal_button_dict[button_id][1] = 0
             button.config(style = 'InactiveGoal.TButton')
-        print(state.get())
-
+        
 
     #build frame and children to select goals to edit or add goals
     def build_edit_goals_main_frame(self):
@@ -267,10 +265,6 @@ class JournalApp():
         self.edit_goals_frame.destroy()
         self.build_edit_goals_main_frame()
 
-
-
-    
-
     #build the selected calendar frame
     def build_calendar_selection_frame(self):
         self.calendar_section_frame = ttk.Frame(self.window)       
@@ -285,7 +279,6 @@ class JournalApp():
         self.calendar_frame.place(anchor = 'center', relx = .5, rely = .5, height = 300, width = 300)
         self.prev_month_button.place(anchor = 'ne', relx = .45, y = 5, height= 35, width = 75)
         self.next_month_button.place(anchor = 'nw', relx = .55, y = 5, height = 35, width = 75)
-
 
     #stores a 7x6 matrix of buttons and their visible states. if they are visible, the state will be True
     def build_calendar_day_matrix(self):
@@ -353,21 +346,21 @@ class JournalApp():
     #set goal button states
     def set_init_goal_button_states(self):
         goal_dict = self.day.goals #goals as dictionary with key = id, values = [goal description, completion state]
-        if not goal_dict == {}:
-            for id in self.daily_goal_button_dict:
-                if goal_dict[id]:
-                    state = goal_dict[id][1]
-                    if state == 1:
-                        self.daily_goal_button_dict[id][1] = state 
-                        self.daily_goal_button_dict[id][0].config(style = 'ActiveGoal.TButton')
-                    elif state == 0:
-                        self.daily_goal_button_dict[id][1] = state
-                        self.daily_goal_button_dict[id][0].config(style = 'InactiveGoal.TButton')
-                else:
+         
+        for id in self.daily_goal_button_dict:
+            
+            if id in goal_dict:
+                state = goal_dict[id][1]
+                
+                if state == 1:
+                    self.daily_goal_button_dict[id][1] = state 
+                    self.daily_goal_button_dict[id][0].config(style = 'ActiveGoal.TButton')
+                elif state == 0:
+                    self.daily_goal_button_dict[id][1] = state
                     self.daily_goal_button_dict[id][0].config(style = 'InactiveGoal.TButton')
-        else:
-            for id in self.daily_goal_button_dict:
+            else:
                 self.daily_goal_button_dict[id][0].config(style = 'InactiveGoal.TButton')
+     
 
 
     # set the journal entry text to the already saved text, if there is any
@@ -386,12 +379,8 @@ class JournalApp():
         
         for id in self.daily_goal_button_dict:
             button, state = self.daily_goal_button_dict[id]
-            if not isinstance(state,int):
-                state = state.get()
-            if state == False:
-                state = 0
-            elif state == True:
-                state = 1
+            print(state)
+            
             if self.day.goals[id]:
                 self.day.goals[id][1] = state
        
