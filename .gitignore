@@ -1,0 +1,8 @@
+archive/
+.venv/
+__pycache__/
+venv/
+daily_goals.csv
+daily_journal.db
+daily_entries.db
+testing.py
