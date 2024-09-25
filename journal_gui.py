@@ -5,8 +5,6 @@ import tkinter as tk
 from tkinter import ttk
 from journal_backend import JournalData, Day, Month
 
-
-
 class JournalApp():
     def __init__(self, root):
         self.window = root
@@ -25,8 +23,7 @@ class JournalApp():
         self.build_calendar_selection_frame()
         self.select_journal()
         
-
-
+    #setting the current date variables
     def initial_date_vars(self):
         #Setting the current date
         today = datetime.today()
@@ -34,8 +31,6 @@ class JournalApp():
         
         #tkinter variables
         self.selection_label_var = tk.StringVar()  
-
-            
 
     #size touples (x,y)
     def size_vars(self):
@@ -53,8 +48,9 @@ class JournalApp():
         style.configure('ActiveGoal.TButton', background = 'green')
         style.configure('InactiveGoal.TButton', background = 'grey')
 
+    #building tables and getting the month object
     def get_backend_objs(self):
-        # self.journal_data = JournalData()
+        #make sure the tables are built and getting the appropriate month object
         with JournalData() as journal_data:
             journal_data.create_tables()
             self.month = Month(self.current_date.month,self.current_date.year,journal_data)
@@ -65,27 +61,25 @@ class JournalApp():
 
     #shaping and labeling the main window
     def window_attributes(self):
-                
         self.window.geometry(f'{self.window_size[0]}x{self.window_size[1]}+250+100')
         self.window.resizable(False, False)
         self.window.title('Journal and Goals')
 
     #build out the top selection frame (select between journal or calendar)
     def build_selection_frame(self):
+        #build out the needed widgets
         self.selection_frame = ttk.Frame(self.window)
         #buttons and date/month label (will swap from date to month depending on what frame is visible)
         self.journal_button = ttk.Button(self.selection_frame, text = 'Journal', command = self.select_journal)
         self.selection_frame_lable = ttk.Label(self.selection_frame, textvariable=self.selection_label_var)
         self.calendar_button = ttk.Button(self.selection_frame, text = 'Calendar', command = self.select_calendar)
 
+        #place the built widgets
         self.journal_button.place(anchor = 'w', relx = .1, rely = .5, width = 75, height = 40)
         self.selection_frame_lable.place(anchor = 'center', relx = .5, rely = .5, width = 150, height = 40)
         self.calendar_button.place(anchor = 'e', relx = .9, rely=.5, width = 75, height = 40)
-
-
         self.selection_frame.place(x = 0, y = 0, relwidth=1, height = self.selection_frame_size[1])
-
-        
+ 
     #change the label in the selection frame between the date and month depending on what section you are in (journal or calendar)
     def change_selection_frame_label(self, how):
         if how == 'date':
@@ -95,43 +89,43 @@ class JournalApp():
             month = self.current_date.strftime('%B')
             self.selection_label_var.set(month)
 
-  
     #center journal frame
     def build_journal_frame(self):
+        #build the frames and widgets for the main window
         self.journal_frame = ttk.Frame(self.window)
         self.journal_entry_frame = ttk.Frame(self.journal_frame)
-        
         self.journal_entry = tk.Text(self.journal_entry_frame)
-       
+        
+        #build the lower part of the window that will hold the goal buttons and edit buttons
         self.build_daily_options_frame()        
 
+        #place the built widgets
         self.journal_entry.place(x = 3, y =3, relwidth=.99, relheight=.99)
         self.journal_entry_frame.place(x = 0, y = 0, relwidth=1, height = self.journal_entry_frame_size[1])
-
-        
         self.journal_frame.place(x = 0, y = self.selection_frame_size[1], relwidth=1, height = self.journal_frame_size[1])
 
+        #set the text in the journal entry to the given days entry
         self.set_entry_text()
-
-        
 
     #building out the bottom frame with the gaols to select and the save day and edit goals button
     def build_daily_options_frame(self):
-
+        #build needed frame and widgets
         self.daily_options_frame = ttk.Frame(self.journal_frame)
-
-        #populating the daily goal button dictionary to keep track and assign configure each goal button
-        self.daily_goal_button_dict = self.populate_goal_buttons(self.daily_options_frame,(4,4),(0,0))
-        self.make_goal_buttons_toggle()
-
-        self.set_init_goal_button_states()
-
-        #these buttons will be placed and removed with the selection buttons
+         #these buttons will be placed and removed with the selection buttons
         self.edit_goals_button = ttk.Button(self.daily_options_frame, text = 'Edit Goals', command = self.build_edit_goals_main_frame)
         self.save_day_button = ttk.Button(self.daily_options_frame, text = 'Save Day', command=self.save_day_data)
 
+        #populating the daily goal button dictionary to keep track and assign configure each goal button
+        self.daily_goal_button_dict = self.populate_goal_buttons(self.daily_options_frame,(4,4),(0,0))
+        
+        #makes the goal buttons togglable and sets them to the appropriate states for the given day
+        self.make_goal_buttons_toggle()
+        self.set_init_goal_button_states()
+
+        #place the frame, the other widgets will be placed in other functions
         self.daily_options_frame.place(x = 0, y = self.journal_entry_frame_size[1], relwidth=1, height = self.daily_options_frame_size[1])
 
+        #sets weights for the frames grid rows and columns
         for i in range(4):
             self.daily_options_frame.grid_columnconfigure(i, weight = 1, uniform = 'daily_options_columns')
         
@@ -141,12 +135,16 @@ class JournalApp():
     #create all the goal buttons as well as the goal button dictionary 
     #'frame' is where the buttons will be placed, 'size' is a touple of (colums, rows), 'where' is a touple of where to start (column, row)
     def populate_goal_buttons(self, frame, size, where):
+        #getting the goals dictionary from the journal data
         with JournalData() as journal_data:
             goals_dict = journal_data.get_goals_dict()
+
         #holds the button objects to be called on later
         goal_button_dict = {}
         num_columns, num_rows = size
         column, row = where
+
+        #build and grid the buttons using the goals dictionary as a reference
         for i, id in enumerate(goals_dict):
             goal_button = ttk.Button(frame, text = goals_dict[id])
             goal_button.grid(column = column, row = row)
@@ -155,6 +153,7 @@ class JournalApp():
             row = row if column <num_columns -1 else row +1
             column = column +1 if column <num_columns-1 else 0
         
+        #returns the new goal button dictionary for the given frame
         return goal_button_dict
     
     #give each goal id a 'state' of it's button, then config the button command to call the toggle function
@@ -176,34 +175,35 @@ class JournalApp():
             self.daily_goal_button_dict[button_id][1] = 0
             button.config(style = 'InactiveGoal.TButton')
         
-
     #build frame and children to select goals to edit or add goals
     def build_edit_goals_main_frame(self):
+        #build needed frame and widgets
         self.edit_goals_frame = ttk.Frame(self.window)
-
         self.edit_goals_label = ttk.Label(self.edit_goals_frame, text = 'Click on a goal to edit/delete')
-        self.edit_goal_dict = self.populate_goal_buttons(self.edit_goals_frame, (2,5),(0,1))
-
-        for id in self.edit_goal_dict:
-            self.edit_goal_dict[id].configure(command = lambda id=id: self.build_edit_indv_goal_frame(id))
-           
-
         self.add_goal_button = ttk.Button(self.edit_goals_frame, text = 'Add Goal', command = self.build_add_goal_frame)
         self.close_button = ttk.Button(self.edit_goals_frame, text = 'Done', command = self.rebuild_daily_options_frame)
 
+        #build out the goal buttons
+        self.edit_goal_dict = self.populate_goal_buttons(self.edit_goals_frame, (2,5),(0,1))
+
+        #set the command to open edit individual goal options
+        for id in self.edit_goal_dict:
+            self.edit_goal_dict[id].configure(command = lambda id=id: self.build_edit_indv_goal_frame(id))
+           
+        #place and grid the widgets
         self.edit_goals_label.grid(column = 0, row = 0, columnspan=2, sticky='nsew')
         self.add_goal_button.grid(column = 0, row = 6)
         self.close_button.grid(column = 1, row = 6)
-
         self.edit_goals_frame.place(anchor = 'center', relx=.5, rely=.5, height = 250, width = 300)
 
+        #assign the grid columns and rows the same weight and make them uniform, keepint them the same size
         for i in range(2):
             self.edit_goals_frame.grid_columnconfigure(i, weight = 1, uniform = 'edit_goals_columns')
 
         for i in range(7):
             self.edit_goals_frame.grid_rowconfigure(i, weight = 1, uniform = 'edit_goals_rows')
 
-    #rebuild the daily options frame
+    #rebuild the daily options frame to show the updated goals
     def rebuild_daily_options_frame(self):
         self.edit_goals_frame.destroy()
         self.build_daily_options_frame()
@@ -233,7 +233,10 @@ class JournalApp():
 
     #build the edit an individual goal frame
     def build_edit_indv_goal_frame(self, id):
+        #get the goal description from the button that was pressed given the id
         goal = self.edit_goal_dict[id].cget('text')
+        
+        #build out the frame and needed widgets
         self.edit_indv_goal_frame = ttk.Frame(self.edit_goals_frame)
         edit_label = ttk.Label(self.edit_indv_goal_frame, text = 'Change or Delete Goal')
         self.edit_indv_goal_entry = ttk.Entry(self.edit_indv_goal_frame)
@@ -241,8 +244,10 @@ class JournalApp():
         update_button = ttk.Button(self.edit_indv_goal_frame, text = 'Update Goal', command = lambda: self.edit_indv_goal(id))
         cancel_button = ttk.Button(self.edit_indv_goal_frame, text = 'Cancel', command = self.edit_indv_goal_frame.destroy)
 
+        #fill in the entry with the goal to be edited
         self.edit_indv_goal_entry.insert(0, goal)
 
+        #place frame and widgets
         self.edit_indv_goal_frame.place(anchor= 'center', relx = .5, rely = .5, height = 150, width = 225)
         edit_label.place(relx = .05, rely=0, relheight=.25, relwidth=.9)
         self.edit_indv_goal_entry.place(relx = .05, rely = .25, relheight = .25, relwidth=.9)
@@ -267,14 +272,16 @@ class JournalApp():
 
     #build the selected calendar frame
     def build_calendar_selection_frame(self):
+        #build widgets
         self.calendar_section_frame = ttk.Frame(self.window)       
         self.prev_month_button = ttk.Button(self.calendar_section_frame, text = 'Prev')
         self.next_month_button = ttk.Button(self.calendar_section_frame, text = 'Next')
         self.calendar_frame = ttk.Frame(self.calendar_section_frame)
         
-
+        #build calendar buttons and place them
         self.cal_day_button_matrix = self.build_calendar_day_matrix()
 
+        #place widgets in frame
         self.calendar_section_frame.place(x = 0, y = self.selection_frame_size[1], relwidth=1, height = self.journal_entry_frame_size[1])
         self.calendar_frame.place(anchor = 'center', relx = .5, rely = .5, height = 300, width = 300)
         self.prev_month_button.place(anchor = 'ne', relx = .45, y = 5, height= 35, width = 75)
@@ -336,22 +343,20 @@ class JournalApp():
         self.select_journal()
         self.set_init_goal_button_states()
         
-
     #selects and sets the current day object using the current day variable
     def select_day(self):
         self.day = self.month.get_day(self.current_date)
         self.entry_text = self.day.entry
         
-        
     #set goal button states
     def set_init_goal_button_states(self):
         goal_dict = self.day.goals #goals as dictionary with key = id, values = [goal description, completion state]
-         
-        for id in self.daily_goal_button_dict:
-            
+        
+        for id in self.daily_goal_button_dict:    
+            #checks to make sure there actually is the given goal for the given day
             if id in goal_dict:
                 state = goal_dict[id][1]
-                
+                #sets state and style for the goal button
                 if state == 1:
                     self.daily_goal_button_dict[id][1] = state 
                     self.daily_goal_button_dict[id][0].config(style = 'ActiveGoal.TButton')
@@ -361,8 +366,6 @@ class JournalApp():
             else:
                 self.daily_goal_button_dict[id][0].config(style = 'InactiveGoal.TButton')
      
-
-
     # set the journal entry text to the already saved text, if there is any
     def set_entry_text(self):
         if type(self.entry_text) == tuple:
@@ -372,7 +375,6 @@ class JournalApp():
         if self.entry_text:
             self.journal_entry.insert(tk.END, self.entry_text)
         
-
     #save days data to database
     def save_day_data(self):
         self.day.entry = self.journal_entry.get('1.0',tk.END)
@@ -384,21 +386,11 @@ class JournalApp():
             if self.day.goals[id]:
                 self.day.goals[id][1] = state
        
-
         with JournalData() as journal_data:
             journal_data.check_if_date(self.day)
 
     
-
-
-                    
-
-
-        
-
-
-        
-
+#standard check and start for the app
 if __name__ == '__main__':
     root = tk.Tk()
     app = JournalApp(root)
