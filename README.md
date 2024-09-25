@@ -1,6 +1,9 @@
 # Daily Diary
  Initial thoughts were to make an app that would act as a daily journal along with a daily goal tracker and visualization. 
 
+## To Run
+ Load the journal_backend.py and journal_gui.py into your IDE and it will build the appropriate databases. 
+
 ## Plans and ideas
  - Use SQLite3 for all data handling, not .csv
  - Build a 'Day' class to handle all the stuff from that day. That way I can pass around all the data in one object rather than calling things randomly. __DAY OBJECT EVERYWHERE, EVEN BETWEEN CLASSES__
