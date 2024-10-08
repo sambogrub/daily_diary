@@ -1,6 +1,8 @@
 import sqlite3
 import calendar as cal
 from datetime import datetime
+import logging
+import os
 
 
 
@@ -29,11 +31,6 @@ class JournalData():
         #clean up cursor connection
         if self.cursor:
             self.cursor.close()
-        if self.conn:
-            self.conn.close()
-
-    #make sure the connection is closed
-    def __del__(self):
         if self.conn:
             self.conn.close()
 

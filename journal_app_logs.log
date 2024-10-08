@@ -1,0 +1,3 @@
+2024-10-08 18:52:48,085 - DEBUG - Inserting with query: INSERT INTO entries (date, entry) VALUES (?, ?)
+2024-10-08 18:53:37,690 - DEBUG - Inserting with query: INSERT INTO entries (date, entry) VALUES (?, ?), and values [('2024-10-06', "This is the previous days entry. Its completely original, isn't its?")]
+2024-10-08 18:53:37,691 - ERROR - sqlite error: UNIQUE constraint failed: entries.date

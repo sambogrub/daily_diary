@@ -5,4 +5,5 @@ venv/
 daily_goals.csv
 daily_journal.db
 daily_entries.db
-testing.py
+test_script.py
+trying_things_out.py
