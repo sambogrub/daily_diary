@@ -1,8 +1,12 @@
 
-# data_access/
+# data_access.py
  holds the operators for all sqlite operations
 
-## base_repository.py
+## journal_data
+ Controls the flow of data access with the repositories.
+
+
+## base_repository
  parent module for all repositories to inherit the context manager for sqlite connections
 
  __insert Function__
@@ -11,7 +15,7 @@
    - columns: list - takes a list of strings ['column1', 'column2']
    - values: list[tuple] - takes a list of tuples that corresponds to the columns [(value1, value2)]
 
-## entries_repository.py
+## entries_repository
  - inherits from base_repository.py
  manages all methods and functions for interaction with entries table
  
@@ -21,7 +25,7 @@
     - date - DATE UNIQUE (date is .isoformat(), ex. 2024-01-01)
     - entry - TEXT
 
-## goals_repository.py
+## goals_repository
  - inherits from base_repository.py
  manages all methods and functions for interations with goals and goals_state tables
 
@@ -49,7 +53,7 @@
  - edit entries using the day object data
  - pull data using key words
   
-# models/
+# models.py
 
  __Variables__
  - date
@@ -73,7 +77,7 @@
  
 
 
-# journal_gui
+# journal_ui.py
 
  - top frame with selection buttons
  - 'date'label will change when viewing the journal or calendar (from date format to just the month)
