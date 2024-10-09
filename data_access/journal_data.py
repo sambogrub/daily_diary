@@ -21,10 +21,20 @@ class JournalData():
 
         #get the journal entries for the month
         entries = self.entry_repo.get_monthly_entries(first_day, last_day)
-
+        goals = self.goals_repo.get_goals()
         goal_states = self.goals_repo.get_monthly_states(first_day,last_day)
+        
+        goal_states_and_descriptions = []
 
-        return entries,goal_states
+        #add the descriptions to the tuples of id and state
+        for goal_state in goal_states:
+            goal_id = goal_state[0]
+            state = goal_state[1]
+            for goal in goals:
+                if goal[0] == goal_id:
+                    goal_states_and_descriptions.append((goal_id,goal[1],state))
+
+        return entries,goal_states_and_descriptions
 
     # ensure that the dates passed to the repo are in the correct string format
     def format_date_for_repos(self,date)->str:

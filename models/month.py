@@ -58,3 +58,18 @@ class Month():
         index = self.calendar_matrix[0]
         w,i = index[day_num]
         return self.calendar_matrix[w][i]
+    
+    #adds all data to days of month. Entries tuples will be (date, entry). goals tuple will be (goal id, state)
+    def data_to_days(self,entries: list[tuple],goals: list[tuple]):
+        for entry in entries:
+            day_num = datetime.datetime.strptime(entry[0], '%Y-%m-%d').date().day
+            day = self.get_day(day_num)
+            day.set_entry(entry[1])
+
+        for goal in goals:
+            day_num = datetime.datetime.strptime(entry[0], '%Y-%m-%d').date().day
+            day = self.get_day(day_num)
+            goal = [goal]
+            day.add_goals(goal)
+
+

@@ -1,5 +1,6 @@
 from .base_repository import BaseRepository
-from config import GOALS_TABLE, GOALS_STATE_TABLE
+from utils.app_logger import AppLogger
+from config import GOALS_TABLE, GOALS_STATE_TABLE,DEBUG
 import datetime
 from typing import *
 
@@ -8,6 +9,9 @@ class GoalsRepository(BaseRepository):
         super().__init__()
         self.goals_table = GOALS_TABLE
         self.goals_state_table = GOALS_STATE_TABLE
+        self.logger = AppLogger()
+        self.debugger = DEBUG
+
         self.create_table()
 
     def create_table(self):

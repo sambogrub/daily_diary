@@ -15,6 +15,9 @@ class JournalController():
 
     def get_month(self):
         month = Month(self.current_date, self.journal_data)
+        entries, goals = self.journal_data.populate_month_data(self.current_date)
+        month.data_to_days(entries, goals)
+
         return month
     
     def increase_month(self):

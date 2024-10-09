@@ -1,14 +1,17 @@
 from .base_repository import BaseRepository
-from config import ENTRIES_TABLE
+from utils.app_logger import AppLogger
+from config import ENTRIES_TABLE, DEBUG
 import datetime
 from typing import *
-
 
 class EntriesRepository(BaseRepository):
     def __init__(self):
         super().__init__()
         self.entries_table = ENTRIES_TABLE
         self.create_table()
+
+        self.debugger = DEBUG
+        self.logger = AppLogger()
 
     def create_table(self):
         # query to create the entry table
@@ -32,6 +35,7 @@ class EntriesRepository(BaseRepository):
         formatted_date = date.isoformat()
         entry = self.select(self.entries_table, conditions = {'date': formatted_date})
         return entry
+    
     # deletes the specified dates entry, takes a datetime.date() object
     def delete_entry(self, date: datetime):
         formatted_date = date.isoformat()
