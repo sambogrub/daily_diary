@@ -24,5 +24,8 @@ class JournalController():
     
     def increase_month(self):
         self.current_date = self.current_date+relativedelta(days =+ 1)
+
+    def decrease_mont(self):
+        self.current_date = self.current_date+relativedelta(days =- 1)
         
 
