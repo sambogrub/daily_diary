@@ -29,10 +29,10 @@ class Day():
 
 #basic month class, builds and holds the day classes in a matrix
 class Month():
-    def __init__(self, date, journal_data = None):
+    def __init__(self, date):
         self.month_num = date.month
         self.year = date.year
-        self.journal_data = journal_data 
+        
         self.month_name = self.set_month_name()
         self.calendar_matrix = self.initialize_calendar_matrix()
 

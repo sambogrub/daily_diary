@@ -276,3 +276,6 @@ class JournalData():
     def format_date_for_repos(self,date)->str:
         formatted_date = date.isoformat()
         return formatted_date
+    
+    def save_day_data(self,date, entry: str, goals: list[dict] = None):
+        self.entry_repo.add_entry(date,entry)
