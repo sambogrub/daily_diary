@@ -1,3 +1,5 @@
+#main module that contains all the data access and controller classes 
+
 import sqlite3
 from contextlib import contextmanager
 from config import DATABASE_NAME, DEBUG, GOALS_STATE_TABLE,GOALS_TABLE,ENTRIES_TABLE

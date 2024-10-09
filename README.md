@@ -3,13 +3,13 @@
  I have gone through multiple iterations of this idea, and have settled on building it using layerd architecture. 
 
 ## To Run
- copy journal_main.py and the needed dependencies:
-  - controllers/
-  - data_access/
-  - models/
-  - ui/
-  - utils/
-  - config.py
+ At the moment it does not run with a UI. It only has the business end of data access and month/day models. 
+ to interact with the current code, copy the following modules:
+ - data_access.py
+ - journal_controller.py
+ - models.py
+ - app_logger.py
+ - config.py
  
 
 

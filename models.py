@@ -1,3 +1,5 @@
+# module that contains the main models, the day and the month that contains the days
+
 import calendar as cal
 import datetime
 
