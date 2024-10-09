@@ -4,6 +4,7 @@ from config import DATABASE_NAME, DEBUG, GOALS_STATE_TABLE,GOALS_TABLE,ENTRIES_T
 import typing
 import datetime
 import calendar
+from app_logger import AppLogger
 
 class BaseRepository:
     def __init__(self):
