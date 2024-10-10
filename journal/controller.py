@@ -1,7 +1,7 @@
 # main journal controller. will interact with both the ui and data access
 
-from models import Month
-from data_access import JournalData
+from model import Month
+from repository import JournalData
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
