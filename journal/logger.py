@@ -1,35 +1,31 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from config import LOG_FILE
+import config
 
-class AppLogger:
-    def __init__(self, max_bytes: int = 5*1024*1024, backup_count: int = 5):
-        self.log_file = LOG_FILE
-        self.logger = logging.getLogger(self.log_file)
-        self.logger.setLevel(logging.DEBUG)
-        
-        # creates rotating file handler
-        handler = RotatingFileHandler(self.log_file, maxBytes=max_bytes, backupCount=backup_count)
 
-        # log formatter
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
+# This is the default name for the Journal logger
+JOURNAL_LOGGER_NAME = "journal"
 
-        # adding handler
-        if not self.logger.hasHandlers(): # keep from having multiple handlers
-            self.logger.addHandler(handler)
 
-    def debug(self, message: str):
-        self.logger.debug(message)
+def configure_logger(
+        name = JOURNAL_LOGGER_NAME,
+        log_file = config.LOGGING_FILE_NAME,
+        level = config.LOGGING_LEVEL,
+        size_limit = config.LOGGING_MAX_LOG_SIZE,
+        backup_count = config.LOGGING_FILE_BACKUP_COUNT):
+    """ Sets up the default Journal logger based on the values from config module """
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    if not logger.hasHandlers():
+        handler = RotatingFileHandler(log_file, maxBytes=size_limit, backupCount=backup_count)
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logger.addHandler(handler)
 
-    def info(self,message: str):
-        self.logger.info(message)
-        
-    def warning(self, message: str):
-        self.logger.warning(message)
 
-    def error(self, message: str):
-        self.logger.error(message)
-    
-    def critical(self, message: str):
-        self.logger.critical(message)
+def journal_logger():
+    """
+        Shortcut for retrieving default Journal logger. Make sure
+        you've initialized the logger with a call of the configure_logger
+        function (needs to be done just once at the start of the app).
+    """
+    return logging.getLogger(JOURNAL_LOGGER_NAME)

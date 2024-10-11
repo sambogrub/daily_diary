@@ -2,21 +2,16 @@
 
 import sqlite3
 from contextlib import contextmanager
-from config import DATABASE_NAME, DEBUG, GOALS_STATE_TABLE,GOALS_TABLE,ENTRIES_TABLE
-import typing
+from config import DATABASE_NAME, GOALS_STATE_TABLE, GOALS_TABLE, ENTRIES_TABLE
 import datetime
 import calendar
-from logger import AppLogger
+import logger
+
 
 class BaseRepository:
     def __init__(self):
         self.db_name = DATABASE_NAME
-
-        # get logger instance
-        self.logger = AppLogger()
-
-        #set the debugging value (true will log debug messages)
-        self.debugger = DEBUG
+        self.logger = logger.journal_logger()
 
     # connection manager, to be used in 'with' statements
     @contextmanager
@@ -28,10 +23,10 @@ class BaseRepository:
             conn.commit()
         except sqlite3.IntegrityError as e:
             conn.rollback()
-            self.logger.error(f'sqlite error: {e}')
+            self.logger.exception('SQLite error: %s', e)
         except Exception as e:
             conn.rollback()
-            self.logger.error(f'Error at: {e}')
+            self.logger.exception('Error at: %s', e)
             raise
         finally:
             conn.close()
@@ -42,8 +37,7 @@ class BaseRepository:
         placeholders = ', '.join(['?'] * len(columns))
         query = f'INSERT INTO {table} ({columns_str}) VALUES ({placeholders})'
 
-        if self.debugger:
-            self.logger.debug(f'Inserting with query: {query}, and values {values}')
+        self.logger.debug('Inserting with query: %s, and values %s', query, values)
 
         with self.cursor() as cursor:
             cursor.executemany(query, values)
@@ -70,8 +64,8 @@ class BaseRepository:
             for key in conditions_range:
                 values += tuple(conditions_range[key])
 
-        if self.debugger:
-            self.logger.debug(f'selecting with query: SELECT {columns_str} FROM {table} {where_clause}, and values {values}')
+        self.logger.debug('selecting with query: SELECT %s FROM %s %s, and values %s',
+                          columns_str, table, where_clause, values)
 
         with self.cursor() as cursor:
             cursor.execute(
@@ -85,8 +79,8 @@ class BaseRepository:
         where_clause = ' AND '.join([f'{key} = ?' for key in conditions.keys()])
         values = tuple(conditions.values())
 
-        if self.debugger:
-            self.logger.debug(f'deleting with query: DELETE FROM {table} WHERE {where_clause}, and values {values}')
+        self.logger.debug('deleting with query: DELETE FROM %s WHERE %s, and values %s',
+                          table, where_clause, values)
 
         with self.cursor() as cursor:
             cursor.execute(f'DELETE FROM {table} WHERE {where_clause}', values)
@@ -97,8 +91,8 @@ class BaseRepository:
         where_clause = ' AND '.join([f'{key} = ?' for key in conditions.keys()])
         values = tuple(data.values()) + tuple(conditions.values())
 
-        if self.debugger:
-            self.logger.debug(f'updating with query: UPDATE {table} SET {set_clause} WHERE {where_clause}, and values {values}')
+        self.logger.debug('updating with query: UPDATE % SET %s WHERE %s, and values %s',
+                          table, set_clause, where_clause, values)
 
         with self.cursor() as cursor:
             cursor.execute(f'UPDATE {table} SET {set_clause} WHERE {where_clause}', values)
@@ -108,8 +102,6 @@ class GoalsRepository(BaseRepository):
         super().__init__()
         self.goals_table = GOALS_TABLE
         self.goals_state_table = GOALS_STATE_TABLE
-        self.logger = AppLogger()
-        self.debugger = DEBUG
 
         self.create_table()
 
@@ -197,9 +189,6 @@ class EntriesRepository(BaseRepository):
         super().__init__()
         self.entries_table = ENTRIES_TABLE
         self.create_table()
-
-        self.debugger = DEBUG
-        self.logger = AppLogger()
 
     def create_table(self):
         # query to create the entry table
