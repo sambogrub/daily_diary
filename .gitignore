@@ -8,3 +8,4 @@ journal_data.db
 journal_app_logs.log
 archived scripts/
 logs/
+.DS_Store
