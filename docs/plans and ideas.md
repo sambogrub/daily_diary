@@ -19,7 +19,10 @@
  - select goals to view in calendar functions
 
 ## Controller actions
-
+ - get currently focused month object
+   - populate all the day data forr each day in the month
+ - pass needed data to repository to store
+ -  
 
 
 
