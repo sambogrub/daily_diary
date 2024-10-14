@@ -1,14 +1,24 @@
-# TODO: write some description...
+# TODO: 
+# start logger functions
+# call controller
+# call gui to build window
+
+
 
 import logger
+import controller
+import gui
 
 
 def main():
     """ TODO: describe me... """
-    # ... do whatever init is needed
+    
     logger.configure_logger()
 
-    # start the app...
+    con = controller.JournalController()
+
+    app = gui.JournalGUI(con)
+    app.start_gui()
 
 
 if __name__ == "__main__":

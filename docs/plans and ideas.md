@@ -14,14 +14,22 @@
  - save day functions in journal_gui 
    - save new journal and daily goal data
    - edit existing journal and daily goal data
- - change month functions
+ - Sorta Done change month functions
  - select days in calendar functions
  - select goals to view in calendar functions
+
+## Controller actions
+
+
+
+
+
 
 
  ## things for base_repository.py
  __possible generic methods__
-  def insert(self, data):
+
+    def insert(self, data):
         columns = ', '.join(data.keys())
         placeholders = ', '.join(['?'] * len(data))
         values = tuple(data.values())

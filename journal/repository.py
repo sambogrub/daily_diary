@@ -266,5 +266,17 @@ class JournalData():
         formatted_date = date.isoformat()
         return formatted_date
     
+    def check_if_entry(self,date,entry:str, goals: list[dict] = None):
+        if self.entry_repo.get_entry(date) == None:
+            self.save_day_data(date,entry, goals)
+        else:
+            self.update_day_data(date,entry,goals)
+
+        
+    # saves new day data to tables
     def save_day_data(self,date, entry: str, goals: list[dict] = None):
         self.entry_repo.add_entry(date,entry)
+
+    #update entries data to tables
+    def update_day_data(self,date,entry:str, goals:list[dict] = None):
+        self.entry_repo.edit_entry(date,entry)
