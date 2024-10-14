@@ -8,8 +8,10 @@ WINDOW_RESIZEABLE = (False,False)
 class JournalGUI(tk.Tk):
     def __init__(self,controller):
         super().__init__()
-        self.window_specs()
         self.controller = controller
+        self.window_specs()
+        self.style_configure()
+        
 
     # define out specs for the main window
     def window_specs(self):
@@ -17,7 +19,17 @@ class JournalGUI(tk.Tk):
         self.resizable(WINDOW_RESIZEABLE[0],WINDOW_RESIZEABLE[1])
         self.title("Daily Journal")
 
-    # populate window with 
+    # configure styles for windows and widgets
+    def style_configure(self):
+        style = ttk.Style()
+        style.theme_use('alt')
+    
+    # populate window with appropriate frames
+    def building_frames(self):
+        pass
+
+
+
 
 
     # start the gui side of the app
