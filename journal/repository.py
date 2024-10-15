@@ -4,11 +4,22 @@ import sqlite3
 from contextlib import contextmanager
 from config import DATABASE_NAME, GOALS_STATE_TABLE, GOALS_TABLE, ENTRIES_TABLE
 import datetime
-import calendar
 import logger
+
+# Refactoring suggestion...
+def journal_db_connection(database_name: str = DATABASE_NAME) -> sqlite3.Connection:
+    """ Function provides a sqlite3.Connection for the Journal DB. """
+    # TODO: Implement me
+
+# Refactoring suggestion...
+def initialize_journal_db(connection: sqlite3.Connection) -> None:
+    """ Function responsible for initializing Journal DB. """
+    # TODO: Move all "CREATE TABLE IF NOT EXISTS" queries here
 
 
 class BaseRepository:
+    # Refactoring suggestion - pass sqlite3.Connection as __init__ parameter
+    # There's no need to know DB name (i.e. "location of the DB")
     def __init__(self):
         self.db_name = DATABASE_NAME
         self.logger = logger.journal_logger()
@@ -97,6 +108,7 @@ class BaseRepository:
         with self.cursor() as cursor:
             cursor.execute(f'UPDATE {table} SET {set_clause} WHERE {where_clause}', values)
 
+
 class GoalsRepository(BaseRepository):
     def __init__(self):
         super().__init__()
@@ -105,6 +117,8 @@ class GoalsRepository(BaseRepository):
 
         self.create_table()
 
+    # Refactoring suggestion - move this code to initialize_journal_db function.
+    # Reason - a repository typically shouldn't deal with structural changes.
     def create_table(self):
         # Querys to create the appropriate tables
         goals_table_query = f'''
@@ -190,10 +204,12 @@ class EntriesRepository(BaseRepository):
         self.entries_table = ENTRIES_TABLE
         self.create_table()
 
+    # Refactoring suggestion - move this code to initialize_journal_db function.
+    # Reason - a repository typically shouldn't deal with structural changes.
     def create_table(self):
         # query to create the entry table
         entry_table_query = '''
-        CREATE TABLE IF NOT EXIsTS entries (
+        CREATE TABLE IF NOT EXISTS entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date DATE UNIQUE,
         entry TEXT
@@ -225,58 +241,6 @@ class EntriesRepository(BaseRepository):
 
     #gets the entries for the entire given month
     def get_monthly_entries(self, first_day, last_day)->list[tuple]:
-        entries =self.select(self.entries_table,['date','entry'], conditions_range = {'date':(first_day,last_day)})
+        entries = self.select(self.entries_table,['date','entry'], conditions_range = {'date':(first_day,last_day)})
         return entries
 
-
-class JournalData():
-    def __init__(self):
-        self.entry_repo = EntriesRepository()
-        self.goals_repo = GoalsRepository()
-
-    # get all the data needed for each day in the month. takes a date, and returns a list of dictionaries for the whole month
-    # returns [{date: {entry: entry,goal_id:(description,state)}}]
-    def populate_month_data(self, date: datetime) -> list[dict]:
-        #get the current year and month from the given date then get the first and last days of the current month
-        year = date.year
-        month = date.month
-        first_day = self.format_date_for_repos(datetime.date(year,month,1))
-        last_day_cal = calendar.monthrange(year,month)
-        last_day = self.format_date_for_repos(datetime.date(year,month,last_day_cal[1]))
-
-        #get the journal entries for the month
-        entries = self.entry_repo.get_monthly_entries(first_day, last_day)
-        goals = self.goals_repo.get_goals()
-        goal_states = self.goals_repo.get_monthly_states(first_day,last_day)
-        
-        goal_states_and_descriptions = []
-
-        #add the descriptions to the tuples of id and state
-        for goal_state in goal_states:
-            goal_id = goal_state[0]
-            state = goal_state[1]
-            for goal in goals:
-                if goal[0] == goal_id:
-                    goal_states_and_descriptions.append((goal_id,goal[1],state))
-
-        return entries,goal_states_and_descriptions
-
-    # ensure that the dates passed to the repo are in the correct string format
-    def format_date_for_repos(self,date)->str:
-        formatted_date = date.isoformat()
-        return formatted_date
-    
-    def check_if_entry(self,date,entry:str, goals: list[dict] = None):
-        if self.entry_repo.get_entry(date) == None:
-            self.save_day_data(date,entry, goals)
-        else:
-            self.update_day_data(date,entry,goals)
-
-        
-    # saves new day data to tables
-    def save_day_data(self,date, entry: str, goals: list[dict] = None):
-        self.entry_repo.add_entry(date,entry)
-
-    #update entries data to tables
-    def update_day_data(self,date,entry:str, goals:list[dict] = None):
-        self.entry_repo.edit_entry(date,entry)
