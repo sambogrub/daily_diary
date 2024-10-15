@@ -1,23 +1,27 @@
 # main journal controller. will interact with both the ui and data access
 
-from model import Month
-from repository import EntriesRepository, GoalsRepository
-from datetime import datetime, date
-from dateutil.relativedelta import relativedelta
 import calendar
+import datetime
+
+from dateutil.relativedelta import relativedelta
+
+import model
+from journal.model import Month
 
 
-class JournalData():
-    def __init__(self):
-        self.entry_repo = EntriesRepository()
-        self.goals_repo = GoalsRepository()
+class JournalData:
+    """ TODO: Document me! """
+
+    def __init__(self, entry_repo, goals_repo):
+        self.entry_repo = entry_repo
+        self.goals_repo = goals_repo
 
     # get all the data needed for each day in the month. takes a date, and returns a list of dictionaries for the whole month
     # returns [{date: {entry: entry,goal_id:(description,state)}}]
-    def populate_month_data(self, date: datetime) -> list[dict]:
+    def populate_month_data(self, date_: datetime.date) -> list[dict]:
         # get the current year and month from the given date then get the first and last days of the current month
-        year = date.year
-        month = date.month
+        year = date_.year
+        month = date_.month
         first_day = self.format_date_for_repos(datetime.date(year, month, 1))
         last_day_cal = calendar.monthrange(year, month)
         last_day = self.format_date_for_repos(datetime.date(year, month, last_day_cal[1]))
@@ -45,7 +49,7 @@ class JournalData():
         return formatted_date
 
     def check_if_entry(self, date, entry: str, goals: list[dict] = None):
-        if self.entry_repo.get_entry(date) == None:
+        if self.entry_repo.get_entry(date) is None:
             self.save_day_data(date, entry, goals)
         else:
             self.update_day_data(date, entry, goals)
@@ -59,46 +63,51 @@ class JournalData():
         self.entry_repo.edit_entry(date, entry)
 
 
-class JournalController():
-    def __init__(self):
-        self.journal_data = JournalData()
-        self.current_date = self.initialize_date() # date object with day, month, year attributes
-        self.month = None
-        self.get_month()
-        
-    def initialize_date(self):
-        today = date.today()
-        return today
+class JournalController:
+    """ TODO: Document me! """
 
-    def get_month(self):
-        month = Month(self.current_date)
+    def __init__(self, entry_repo, goals_repo):
+        self.journal_data = JournalData(entry_repo, goals_repo)
+        self.current_date = datetime.date.today()
+        self.month = self.load_month()
+
+    # Does it make sense to use this method outside the JournalController?
+    # If not, we should make it "private" by adding an underscore to the
+    # beginning of the name i.e. _load_month
+    def load_month(self) -> Month:
+        month = model.Month(self.current_date)
         entries, goals = self.journal_data.populate_month_data(self.current_date)
         month.data_to_days(entries, goals)
-        self.month = month
-    
+        return month
+
+    # Maybe it could be called next_month?
     def increase_month(self):
-        self.current_date = self.current_date+relativedelta(month =+ 1)
-        self.get_month()
+        self.current_date = self.current_date + relativedelta(month=1)
+        self.month = self.load_month()
 
+    # Maybe it could be called previous_month?
     def decrease_month(self):
-        self.current_date = self.current_date+relativedelta(month =- 1)
-        self.get_month()
+        self.current_date = self.current_date + relativedelta(month=-1)
+        self.month = self.load_month()
 
+    # Maybe it could be called next_day?
     def increase_day(self):
-        self.current_date = self.current_date+relativedelta(days =+1)
+        self.current_date = self.current_date + relativedelta(days=1)
+        # what if we cross to the next month?
 
+    # Maybe it could be called previous_day?
     def decrease_day(self):
-        self.current_date = self.current_date+relativedelta(days =- 1)
-    
+        self.current_date = self.current_date + relativedelta(days=-1)
+        # what if we cross to the previous month?
 
-    def add_day_entry(self,entry):
+    def add_day_entry(self, entry):
         day_num = self.current_date.day
         day = self.month.get_day(day_num)
         day.set_entry(entry)
-        self.journal_data.save_day_data(self.current_date,day.entry)
+        self.journal_data.save_day_data(self.current_date, day.entry)
 
     def get_day_entry(self):
         day_num = self.current_date.day
         day = self.month.get_day(day_num)
-        return day.entry  
+        return day.entry
 
