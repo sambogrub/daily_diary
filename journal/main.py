@@ -10,7 +10,8 @@ from tkinter import ttk
 from config import WINDOW_SIZE, WINDOW_RESIZEABLE
 
 def main():
-    """ TODO: describe me... """
+    """ This module starts the logger, initializes the tkinter window, initializes the controller,
+     then starts the tkinter mainloop """
     logger.configure_logger()
 
     root = tk.Tk()
