@@ -4,13 +4,15 @@ from model import Month
 from repository import JournalData
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+from gui import JournalGUI
 
 class JournalController():
-    def __init__(self):
+    def __init__(self, root):
         self.journal_data = JournalData()
         self.current_date = self.initialize_date() # date object with day, month, year attributes
         self.month = None
         self.get_month()
+        self.ui = JournalGUI(root, self)
         
     def initialize_date(self):
         today = date.today()
