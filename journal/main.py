@@ -3,11 +3,13 @@
 # call controller
 # call gui to build window
 
-import logger
-import controller
 import tkinter as tk
-from tkinter import ttk
+
+import controller
+import logger
+from repository import GoalsRepository, EntriesRepository
 from config import WINDOW_SIZE, WINDOW_RESIZEABLE
+
 
 def main():
     """ This module starts the logger, initializes the tkinter window, initializes the controller,
@@ -20,7 +22,11 @@ def main():
     root.resizable(WINDOW_RESIZEABLE[0],WINDOW_RESIZEABLE[1])
     root.title("Daily Journal")
 
-    app = controller.JournalController(root)
+    app = controller.JournalController(
+        goals_repo=GoalsRepository(),
+        entries_repo=EntriesRepository(),
+        root=root
+    )
 
     root.mainloop()
 

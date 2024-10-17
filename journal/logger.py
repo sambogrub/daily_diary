@@ -1,10 +1,15 @@
+"""
+TODO: Add module docs...
+"""
+
 import logging
+import pathlib
 from logging.handlers import RotatingFileHandler
+
 import config
 
-
 # This is the default name for the Journal logger
-JOURNAL_LOGGER_NAME = "journal"
+JOURNAL_LOGGER_NAME = 'journal'
 
 
 def configure_logger(
@@ -13,10 +18,14 @@ def configure_logger(
         level = config.LOGGING_LEVEL,
         size_limit = config.LOGGING_MAX_LOG_SIZE,
         backup_count = config.LOGGING_FILE_BACKUP_COUNT):
-    """ Sets up the default Journal logger based on the values from config module """
+    """ Sets up the default Journal logger based on the values from config module. """
     logger = logging.getLogger(name)
     logger.setLevel(level)
     if not logger.hasHandlers():
+        # Create folder structure for log files in case it doesn't exist yet...
+        log_dir = pathlib.Path(config.LOGGING_FILE_NAME).parent
+        log_dir.mkdir(parents=True, exist_ok=True)
+        # Keep the logging configuration to a minimum
         handler = RotatingFileHandler(log_file, maxBytes=size_limit, backupCount=backup_count)
         handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         logger.addHandler(handler)
@@ -29,3 +38,4 @@ def journal_logger():
         function (needs to be done just once at the start of the app).
     """
     return logging.getLogger(JOURNAL_LOGGER_NAME)
+
