@@ -1,8 +1,13 @@
+<<<<<<< Updated upstream
 # TODO: 
 # start logger functions
 # call controller
 # call gui to build window
 
+=======
+import logger
+import controller
+>>>>>>> Stashed changes
 import tkinter as tk
 
 import controller

@@ -22,3 +22,11 @@ class JournalGUI():
         pass
 
 
+class JournalView():
+    def __init__(self,root):
+        pass
+
+
+class CalendarView():
+    def __init__(self, root):
+        pass
