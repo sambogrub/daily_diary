@@ -1,6 +1,6 @@
-# main module that contains all the data access and controller classes
 """
-TODO: Add module docs...
+This is the main data access module. It contains the BaseRepository parent class, which both the EntriesRepository and GoalsRepository classes use.
+The db connection and initialization have been separated from the repository classes.
 """
 
 import datetime
@@ -11,42 +11,78 @@ import logger
 from config import DATABASE_NAME, GOALS_STATE_TABLE, GOALS_TABLE, ENTRIES_TABLE
 
 
-# Refactoring suggestion...
+# retreive the db connection
 def journal_db_connection(database_name: str = DATABASE_NAME) -> sqlite3.Connection:
     """ Function provides a sqlite3.Connection for the Journal DB. """
-    # TODO: Implement me
+    return sqlite3.connect(database_name)
 
 
-# Refactoring suggestion...
-def initialize_journal_db(connection: sqlite3.Connection) -> None:
+# initialize the db and tables if needed
+def initialize_journal_db(connection: sqlite3.Connection, logger: logger) -> None:
     """ Function responsible for initializing Journal DB. """
-    # TODO: Move all "CREATE TABLE IF NOT EXISTS" queries here
+    # Querys to create the appropriate tables
+    goals_table_query = f'''
+    CREATE TABLE IF NOT EXISTS {GOALS_TABLE} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    goal_description TEXT UNIQUE
+    )'''
+    goals_state_table_query = f'''
+    CREATE TABLE IF NOT EXISTS {GOALS_STATE_TABLE} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entry_date DATE NOT NULL,
+    goal_id INTEGER NOT NULL,
+    state BOOLEAN DEFAULT 0,
+    FOREIGN KEY (entry_date) REFERENCES entries(date) ON DELETE CASCADE,
+    FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
+    )'''
+    entry_table_query = '''
+        CREATE TABLE IF NOT EXISTS entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date DATE UNIQUE,
+        entry TEXT
+        )'''
 
+    try:
+        cursor = connection.cursor()
+        cursor.execute(goals_table_query)
+        cursor.execute(goals_state_table_query)
+        cursor.execute(entry_table_query)
+        connection.commit()
+    except sqlite3.IntegrityError as e:
+        connection.rollback()
+        logger.exception('SQLite error: %s', e)
+    except Exception as e:
+        connection.rollback()
+        logger.exception('Error at: %s', e)
+        raise
+    
 
 class BaseRepository:
-    # Refactoring suggestion - pass sqlite3.Connection as __init__ parameter
-    # There's no need to know DB name (i.e. "location of the DB")
+    # parent class for the other repositories
+ 
     def __init__(self):
-        self.db_name = DATABASE_NAME
         self.logger = logger.journal_logger()
+        self.conn = journal_db_connection()
+        initialize_journal_db(self.conn, self.logger)
 
     # connection manager, to be used in 'with' statements
     @contextmanager
     def cursor(self):
-        conn = sqlite3.connect(self.db_name)
+        
         try:
-            cursor = conn.cursor()
+            cursor = self.conn.cursor()
             yield cursor
-            conn.commit()
+            self.conn.commit()
         except sqlite3.IntegrityError as e:
-            conn.rollback()
+            self.conn.rollback()
             self.logger.exception('SQLite error: %s', e)
         except Exception as e:
-            conn.rollback()
+            self.conn.rollback()
             self.logger.exception('Error at: %s', e)
             raise
-        finally:
-            conn.close()
+        # I'm unsure if this needs to still be implemented
+        # finally:
+        #     self.conn.close()
 
     # basic insert function. Does not return anything. Takes a list of the columns needed, and a list of tuples
     def insert(self, table: str, columns: list, values: list[tuple]):
@@ -121,33 +157,6 @@ class GoalsRepository(BaseRepository):
         self.goals_table = GOALS_TABLE
         self.goals_state_table = GOALS_STATE_TABLE
 
-        self.create_table()
-
-    # Refactoring suggestion - move this code to initialize_journal_db function.
-    # Reason - a repository typically shouldn't deal with structural changes.
-    def create_table(self):
-        # Querys to create the appropriate tables
-        goals_table_query = f'''
-        CREATE TABLE IF NOT EXISTS {self.goals_table} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        goal_description TEXT UNIQUE
-        )'''
-        goals_state_table_query = f'''
-        CREATE TABLE IF NOT EXISTS {self.goals_state_table} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        entry_date DATE NOT NULL,
-        goal_id INTEGER NOT NULL,
-        state BOOLEAN DEFAULT 0,
-        FOREIGN KEY (entry_date) REFERENCES entries(date) ON DELETE CASCADE,
-        FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
-        )'''
-
-        # use the context manager from base_repository
-        with self.cursor() as cursor:
-            cursor.execute(goals_table_query)
-
-            cursor.execute(goals_state_table_query)
-
     # adds a new goal to the goals table
     def add_new_goal(self, description):
         self.insert(self.goals_table, ['goal_description'], [(description,)])
@@ -208,22 +217,7 @@ class EntriesRepository(BaseRepository):
     def __init__(self):
         super().__init__()
         self.entries_table = ENTRIES_TABLE
-        self.create_table()
-
-    # Refactoring suggestion - move this code to initialize_journal_db function.
-    # Reason - a repository typically shouldn't deal with structural changes.
-    def create_table(self):
-        # query to create the entry table
-        entry_table_query = '''
-        CREATE TABLE IF NOT EXISTS entries (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date DATE UNIQUE,
-        entry TEXT
-        )'''
-
-        with self.cursor() as cursor:
-            cursor.execute(entry_table_query)
-
+       
     # adds a new entry to the table, takes a datetime.date() object
     def add_entry(self, date: datetime, entry_text: str):
         formatted_date = date.isoformat()
