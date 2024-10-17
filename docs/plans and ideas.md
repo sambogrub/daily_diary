@@ -10,6 +10,7 @@
 ## TO DO
  - DONE edit goals function in journal_backend
  - DONE edit goals options in journal_gui
+ - DONE deal with increase or decrease of month when changing days
  - edit journal function in journal_backend
  - save day functions in journal_gui 
    - save new journal and daily goal data

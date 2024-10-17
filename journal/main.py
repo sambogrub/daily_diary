@@ -1,20 +1,11 @@
-<<<<<<< Updated upstream
-# TODO: 
-# start logger functions
-# call controller
-# call gui to build window
-
-=======
 import logger
 import controller
->>>>>>> Stashed changes
 import tkinter as tk
 
 import controller
 import logger
 from repository import GoalsRepository, EntriesRepository
 from config import WINDOW_SIZE, WINDOW_RESIZEABLE
-
 
 def main():
     """ This module starts the logger, initializes the tkinter window, initializes the controller,
@@ -34,7 +25,6 @@ def main():
     )
 
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()
