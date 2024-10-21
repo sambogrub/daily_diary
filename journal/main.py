@@ -11,25 +11,23 @@ from config import WINDOW_SIZE, WINDOW_RESIZEABLE, DATABASE_NAME
 
 def main():
     """ This module starts the logger, initializes the tkinter window, initializes the controller,
-     then starts the tkinter mainloop """
+        initializes the db connection manager, then starts the tkinter mainloop """
     logger.configure_logger()
 
     log = logger.journal_logger()
     db_conn = journal_db_connection()
-    db_cursor = cursor(log,db_conn)
-
-
+   
     root = tk.Tk()
-
     root.geometry(f'{WINDOW_SIZE[0]}x{WINDOW_SIZE[1]}+{WINDOW_SIZE[2]}+{WINDOW_SIZE[3]}')
     root.resizable(WINDOW_RESIZEABLE[0],WINDOW_RESIZEABLE[1])
     root.title("Daily Journal")
 
-    app = controller.JournalController(
-        goals_repo=GoalsRepository(db_cursor),
-        entries_repo=EntriesRepository(db_cursor),
-        root=root
-    )
+    with sqlite_cursor(log,db_conn) as cursor:
+        app = controller.JournalController(
+            goals_repo=GoalsRepository(cursor),
+            entries_repo=EntriesRepository(cursor),
+            root=root
+        )
 
     root.mainloop()
 
@@ -40,10 +38,9 @@ def journal_db_connection(database_name: str = DATABASE_NAME) -> sqlite3.Connect
 
  # connection manager, to be used in 'with' statements
 @contextmanager
-def cursor(logger,conn):
+def sqlite_cursor(logger,conn):
     cursor = conn.cursor()
     try:
-        
         yield cursor
         conn.commit()
     except sqlite3.IntegrityError as e:
@@ -55,6 +52,7 @@ def cursor(logger,conn):
         raise
     # I'm unsure if this needs to still be implemented
     finally:
+        cursor.close()
         conn.close()
 
 if __name__ == "__main__":
