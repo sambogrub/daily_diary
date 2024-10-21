@@ -11,14 +11,14 @@ import logger
 from config import DATABASE_NAME, GOALS_STATE_TABLE, GOALS_TABLE, ENTRIES_TABLE
 
 
-# retreive the db connection
-def journal_db_connection(database_name: str = DATABASE_NAME) -> sqlite3.Connection:
-    """ Function provides a sqlite3.Connection for the Journal DB. """
-    return sqlite3.connect(database_name)
+# # retreive the db connection
+# def journal_db_connection(database_name: str = DATABASE_NAME) -> sqlite3.Connection:
+#     """ Function provides a sqlite3.Connection for the Journal DB. """
+#     return sqlite3.connect(database_name)
 
 
 # initialize the db and tables if needed
-def initialize_journal_db(connection: sqlite3.Connection, logger: logger) -> None:
+def initialize_journal_db(cursor: sqlite3.Cursor, logger: logger) -> None:
     """ Function responsible for initializing Journal DB. """
     # Querys to create the appropriate tables
     goals_table_query = f'''
@@ -42,47 +42,52 @@ def initialize_journal_db(connection: sqlite3.Connection, logger: logger) -> Non
         entry TEXT
         )'''
 
-    try:
-        cursor = connection.cursor()
+    with cursor() as cursor:
         cursor.execute(goals_table_query)
-        cursor.execute(goals_state_table_query)
-        cursor.execute(entry_table_query)
-        connection.commit()
-    except sqlite3.IntegrityError as e:
-        connection.rollback()
-        logger.exception('SQLite error: %s', e)
-    except Exception as e:
-        connection.rollback()
-        logger.exception('Error at: %s', e)
-        raise
+        # cursor.execute(goals_state_table_query)
+        # cursor.execute(entry_table_query)
+
+    # try:
+    #     cursor = connection.cursor()
+    #     cursor.execute(goals_table_query)
+    #     cursor.execute(goals_state_table_query)
+    #     cursor.execute(entry_table_query)
+    #     connection.commit()
+    # except sqlite3.IntegrityError as e:
+    #     connection.rollback()
+    #     logger.exception('SQLite error: %s', e)
+    # except Exception as e:
+    #     connection.rollback()
+    #     logger.exception('Error at: %s', e)
+    #     raise
     
 
 class BaseRepository:
     # parent class for the other repositories
  
-    def __init__(self):
+    def __init__(self,cursor):
         self.logger = logger.journal_logger()
-        self.conn = journal_db_connection()
-        initialize_journal_db(self.conn, self.logger)
+        self.cursor = cursor
+        initialize_journal_db(cursor, self.logger)
 
     # connection manager, to be used in 'with' statements
-    @contextmanager
-    def cursor(self):
+    # @contextmanager
+    # def cursor(self):
         
-        try:
-            cursor = self.conn.cursor()
-            yield cursor
-            self.conn.commit()
-        except sqlite3.IntegrityError as e:
-            self.conn.rollback()
-            self.logger.exception('SQLite error: %s', e)
-        except Exception as e:
-            self.conn.rollback()
-            self.logger.exception('Error at: %s', e)
-            raise
-        # I'm unsure if this needs to still be implemented
-        # finally:
-        #     self.conn.close()
+    #     try:
+    #         cursor = self.conn.cursor()
+    #         yield cursor
+    #         self.conn.commit()
+    #     except sqlite3.IntegrityError as e:
+    #         self.conn.rollback()
+    #         self.logger.exception('SQLite error: %s', e)
+    #     except Exception as e:
+    #         self.conn.rollback()
+    #         self.logger.exception('Error at: %s', e)
+    #         raise
+    #     # I'm unsure if this needs to still be implemented
+    #     # finally:
+    #     #     self.conn.close()
 
     # basic insert function. Does not return anything. Takes a list of the columns needed, and a list of tuples
     def insert(self, table: str, columns: list, values: list[tuple]):
@@ -152,8 +157,8 @@ class BaseRepository:
 
 
 class GoalsRepository(BaseRepository):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,cursor):
+        super().__init__(cursor)
         self.goals_table = GOALS_TABLE
         self.goals_state_table = GOALS_STATE_TABLE
 
@@ -214,8 +219,8 @@ class GoalsRepository(BaseRepository):
 
 
 class EntriesRepository(BaseRepository):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cursor):
+        super().__init__(cursor)
         self.entries_table = ENTRIES_TABLE
        
     # adds a new entry to the table, takes a datetime.date() object
