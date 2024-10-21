@@ -1,5 +1,13 @@
+<<<<<<< Updated upstream
+# TODO: 
+# start logger functions
+# call controller
+# call gui to build window
+
+=======
 import logger
 import controller
+>>>>>>> Stashed changes
 import tkinter as tk
 import sqlite3
 from contextlib import contextmanager
@@ -7,7 +15,8 @@ from contextlib import contextmanager
 import controller
 import logger
 from repository import GoalsRepository, EntriesRepository
-from config import WINDOW_SIZE, WINDOW_RESIZEABLE, DATABASE_NAME
+from config import WINDOW_SIZE, WINDOW_RESIZEABLE
+
 
 def main():
     """ This module starts the logger, initializes the tkinter window, initializes the controller,
@@ -31,29 +40,6 @@ def main():
 
     root.mainloop()
 
-# retreive the db connection
-def journal_db_connection(database_name: str = DATABASE_NAME) -> sqlite3.Connection:
-    """ Function provides a sqlite3.Connection for the Journal DB. """
-    return sqlite3.connect(database_name)
-
- # connection manager, to be used in 'with' statements
-@contextmanager
-def sqlite_cursor(logger,conn):
-    cursor = conn.cursor()
-    try:
-        yield cursor
-        conn.commit()
-    except sqlite3.IntegrityError as e:
-        conn.rollback()
-        logger.exception('SQLite error: %s', e)
-    except Exception as e:
-        conn.rollback()
-        logger.exception('Error at: %s', e)
-        raise
-    # I'm unsure if this needs to still be implemented
-    finally:
-        cursor.close()
-        conn.close()
 
 if __name__ == "__main__":
     main()
