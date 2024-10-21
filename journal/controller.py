@@ -1,5 +1,3 @@
-# main journal controller. will interact with both the ui and data access
-
 import calendar
 import datetime
 
@@ -11,7 +9,7 @@ from model import Month
 
 
 class JournalData:
-    """ TODO: Document me! """
+    """ This is the controller for the data repositories. It receives instances of both repositories from the main controller. """
 
     def __init__(self, entries_repo, goals_repo):
         self.entry_repo = entries_repo
@@ -49,7 +47,8 @@ class JournalData:
         formatted_date = date.isoformat()
         return formatted_date
 
-    def check_if_entry(self, date, entry: str, goals: list[dict] = None):
+    # determine if there is an entry, then call the correct method
+    def save_or_update_day_data(self, date, entry: str, goals: list[dict] = None):
         if self.entry_repo.get_entry(date) is None:
             self.save_day_data(date, entry, goals)
         else:
@@ -65,49 +64,53 @@ class JournalData:
 
 
 class JournalController:
-    """ TODO: Document me! """
+    """ This is the main controller. It handles the Month instances and interfaces with the JournalData controller as well as the UI """
 
     def __init__(self, entries_repo, goals_repo, root):
         self.journal_data = JournalData(entries_repo, goals_repo)
         self.current_date = datetime.date.today()
-        self.month = self.load_month()
+        self.month = self._load_month()
         self.ui = JournalGUI(root, self)
 
-    # Does it make sense to use this method outside the JournalController?
-    # If not, we should make it "private" by adding an underscore to the
-    # beginning of the name i.e. _load_month
-    def load_month(self) -> Month:
+    # This returns a Month instance using the current date
+    def _load_month(self) -> Month:
         month = model.Month(self.current_date)
         entries, goals = self.journal_data.populate_month_data(self.current_date)
         month.data_to_days(entries, goals)
         return month
 
-    # Maybe it could be called next_month?
-    def increase_month(self):
+    # increases currrent dates month by 1, then creates new month instance with new date
+    def next_month(self):
         self.current_date = self.current_date + relativedelta(month=1)
         self.month = self.load_month()
 
-    # Maybe it could be called previous_month?
-    def decrease_month(self):
+    # decreases current date's month by 1, then creates new month instance with new date
+    def previous_month(self):
         self.current_date = self.current_date + relativedelta(month=-1)
         self.month = self.load_month()
 
-    # Maybe it could be called next_day?
+     # increases current date's day, and creates new month instance if needed
     def increase_day(self):
+        prev_month_num = self.current_date.month
         self.current_date = self.current_date + relativedelta(days=1)
-        # what if we cross to the next month?
+        if prev_month_num != self.current_date.month:
+            self.month = self._load_month()
 
-    # Maybe it could be called previous_day?
+     # decreases current date's day, and creates new month instance if needed
     def decrease_day(self):
+        prev_month_num = self.current_date.month
         self.current_date = self.current_date + relativedelta(days=-1)
-        # what if we cross to the previous month?
+        if prev_month_num != self.current_date.month:
+            self.month = self._load_month()
 
+     # sets the current dates entry
     def add_day_entry(self, entry):
         day_num = self.current_date.day
         day = self.month.get_day(day_num)
         day.set_entry(entry)
         self.journal_data.save_day_data(self.current_date, day.entry)
-
+    
+    # gets the current dates entry
     def get_day_entry(self):
         day_num = self.current_date.day
         day = self.month.get_day(day_num)
