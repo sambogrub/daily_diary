@@ -104,14 +104,14 @@ class JournalController:
             self.month = self._load_month()
 
      # sets the current dates entry
-    def add_day_entry(self, entry):
+    def add_day_entry(self, entry: str):
         day_num = self.current_date.day
         day = self.month.get_day(day_num)
         day.set_entry(entry)
         self.journal_data.save_day_data(self.current_date, day.entry)
     
     # gets the current dates entry
-    def get_day_entry(self):
+    def get_day_entry(self) -> str:
         day_num = self.current_date.day
         day = self.month.get_day(day_num)
         return day.entry
